@@ -1,2 +1,20 @@
-# compute-oligarchs
-An AI-Punk social simulation sandbox, The Singularity Never Arrives. 《算力寡头》：奇点永不到来 AI朋克交互式社会沙盘 | Tauri + React + TS + Tailwind
+# 算力寡头 · Compute Oligarchs
+
+An AI-punk social simulation sandbox. The singularity never arrives.
+
+## Stack
+
+Tauri 2 + React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui.
+
+## Development
+
+```bash
+pnpm install
+pnpm dev
+pnpm test
+pnpm lint
+pnpm typecheck
+pnpm tauri dev
+```
+
+The desktop build requires the Rust stable toolchain and the platform prerequisites listed by Tauri.
