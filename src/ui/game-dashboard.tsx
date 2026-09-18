@@ -13,6 +13,7 @@ import type { Faction } from "@/core/models/faction";
 import type { GameState } from "@/core/models/game-state";
 import { tick } from "@/core/systems/tick";
 import { Button } from "./button";
+import { MapTiles } from "./map-tiles";
 import "./game-dashboard.css";
 
 const visibleFactionCount = 4;
@@ -133,6 +134,8 @@ export function GameDashboard() {
           <FactionCard faction={faction} index={index} key={faction.id} />
         ))}
       </section>
+
+      <MapTiles tiles={gameState.tiles} />
 
       <footer className="dashboard-footer">
         <p><span className="footer-pulse" aria-hidden="true" /> 数据持续消耗。世界持续变化。</p>

@@ -1,0 +1,88 @@
+.map-section {
+  position: relative;
+  z-index: 5;
+  width: min(1180px, calc(100% - 48px));
+  margin: 12px auto 0;
+  border-top: 1px solid rgb(138 146 140 / 0.25);
+  padding-top: 28px;
+}
+
+.map-section__heading,
+.map-section__eyebrow,
+.map-legend,
+.map-legend span,
+.map-tile__controller,
+.tile-detail__topline,
+.tile-detail__controller,
+.tile-detail__metric span,
+.tile-detail__stability { display: flex; align-items: center; }
+.map-section__heading { justify-content: space-between; gap: 24px; margin-bottom: 18px; }
+.map-section__eyebrow { gap: 8px; margin: 0 0 10px; color: #19e3ff; font: 600 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.2em; }
+.map-section__eyebrow svg { width: 14px; }
+.map-section h2 { margin: 0; font: 700 28px/1 "Bahnschrift", sans-serif; }
+.map-legend { flex-wrap: wrap; justify-content: flex-end; gap: 10px 15px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; }
+.map-legend span { gap: 6px; }
+.legend-dot { width: 6px; height: 6px; background: #8a928c; }
+.legend-dot--consortium { background: #b6ff3b; box-shadow: 0 0 8px #b6ff3b; }
+.legend-dot--sovereign { background: #ff4d2e; box-shadow: 0 0 8px #ff4d2e; }
+.legend-dot--labor { background: #19e3ff; box-shadow: 0 0 8px #19e3ff; }
+.legend-dot--commons { background: #8a928c; }
+
+.map-layout { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.8fr); gap: 12px; }
+.tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 2px; background: rgb(138 146 140 / 0.25); }
+.map-tile { position: relative; display: flex; min-height: 142px; flex-direction: column; align-items: flex-start; justify-content: flex-end; overflow: hidden; border: 0; border-left: 3px solid var(--tile-accent); padding: 15px; color: #e5ebe3; background: var(--tile-background); cursor: pointer; text-align: left; transition: filter 160ms ease, transform 160ms ease; }
+.map-tile::after { position: absolute; inset: 0; background-image: linear-gradient(135deg, transparent 0 47%, rgb(255 255 255 / 0.07) 47% 48%, transparent 48% 100%); content: ""; pointer-events: none; }
+.map-tile:hover, .map-tile:focus-visible { filter: brightness(1.18); outline: 1px solid var(--tile-accent); outline-offset: -1px; transform: translate(-1px, -1px); }
+.map-tile--selected { outline: 2px solid var(--tile-accent); outline-offset: -2px; }
+.map-tile--unstable { animation: tile-flicker 4s steps(1, end) infinite; }
+.tile--consortium { --tile-accent: #b6ff3b; --tile-background: linear-gradient(140deg, rgb(182 255 59 / 0.18), #121812 70%); }
+.tile--sovereign { --tile-accent: #ff4d2e; --tile-background: linear-gradient(140deg, rgb(255 77 46 / 0.19), #181311 70%); }
+.tile--labor { --tile-accent: #19e3ff; --tile-background: linear-gradient(140deg, rgb(25 227 255 / 0.18), #10171a 70%); }
+.tile--labs { --tile-accent: #ff2bd6; --tile-background: linear-gradient(140deg, rgb(255 43 214 / 0.16), #181118 70%); }
+.tile--socialist { --tile-accent: #b6ff3b; --tile-background: linear-gradient(140deg, rgb(182 255 59 / 0.12), #151812 70%); }
+.tile--commons { --tile-accent: #8a928c; --tile-background: linear-gradient(140deg, rgb(138 146 140 / 0.16), #151716 70%); }
+.tile--wasteland { --tile-accent: #ff4d2e; --tile-background: repeating-linear-gradient(125deg, #1b1513 0 8px, #221715 8px 10px); }
+.map-tile__index, .map-tile__drift { position: absolute; top: 14px; color: var(--tile-accent); font: 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.map-tile__index { left: 15px; }
+.map-tile__drift { right: 15px; }
+.map-tile__signal { position: absolute; top: 35px; left: 15px; width: 5px; height: 5px; background: var(--tile-accent); box-shadow: 0 0 8px var(--tile-accent); }
+.map-tile__name { position: relative; z-index: 1; font: 700 20px/1 "Bahnschrift", sans-serif; }
+.map-tile__controller { position: relative; z-index: 1; gap: 6px; margin-top: 8px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; }
+
+.tile-detail { min-height: 100%; border: 1px solid var(--tile-accent); border-left-width: 3px; padding: 18px; background: var(--tile-background); }
+.tile-detail__topline { justify-content: space-between; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.tile-detail__status { color: var(--tile-accent); }
+.tile-detail h3 { margin: 27px 0 8px; font: 700 30px/1 "Bahnschrift", sans-serif; }
+.tile-detail__controller { gap: 8px; margin: 0; color: #8a928c; font: 10px/1.5 "Cascadia Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+.tile-detail__metrics { display: grid; gap: 15px; margin-top: 31px; border-top: 1px solid rgb(138 146 140 / 0.25); padding-top: 18px; }
+.tile-detail__metric { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.tile-detail__metric span { gap: 8px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; }
+.tile-detail__metric svg { width: 14px; color: var(--tile-accent); }
+.tile-detail__metric strong { color: #e5ebe3; font: 600 18px/1 "Cascadia Mono", monospace; }
+.tile-detail__stability { flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 28px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; }
+.tile-detail__stability strong { color: #e5ebe3; font-size: 14px; }
+.tile-detail__stability-track { flex-basis: 100%; height: 3px; background: rgb(138 146 140 / 0.18); }
+.tile-detail__stability-track i { display: block; height: 100%; background: var(--tile-accent); }
+
+@keyframes tile-flicker { 0%, 92%, 100% { filter: none; } 93% { filter: hue-rotate(35deg) saturate(1.7); } 94% { filter: none; } }
+
+@media (max-width: 900px) {
+  .map-layout { grid-template-columns: 1fr; }
+  .tile-detail { min-height: auto; }
+}
+
+@media (max-width: 560px) {
+  .map-section { width: min(100% - 30px, 1180px); }
+  .map-section__heading { align-items: flex-start; flex-direction: column; }
+  .map-legend { justify-content: flex-start; }
+  .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .map-tile { min-height: 128px; padding: 12px; }
+  .map-tile__index { left: 12px; }
+  .map-tile__drift { right: 12px; }
+  .map-tile__signal { left: 12px; }
+  .map-tile__name { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-tile--unstable { animation: none; }
+}
