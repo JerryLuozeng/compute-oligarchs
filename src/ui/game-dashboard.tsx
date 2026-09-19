@@ -17,8 +17,14 @@ import type { Faction } from "@/core/models/faction";
 import type { GameState } from "@/core/models/game-state";
 import type { FactionId } from "@/core/models/ids";
 import { tick } from "@/core/systems/tick";
+import {
+  findTriggeredEvent,
+  type RuntimeGameEvent,
+  type RuntimeGameEventOption
+} from "@/content/event-runtime";
 import { getFactionProfile } from "@/content/factions";
 import { Button } from "./button";
+import { EventDialog } from "./event-dialog";
 import { MapTiles } from "./map-tiles";
 import "./game-dashboard.css";
 
@@ -86,11 +92,23 @@ export function GameDashboard({
 }) {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [glitchEnabled, setGlitchEnabled] = useState(true);
+  const [activeEvent, setActiveEvent] = useState<RuntimeGameEvent | null>(null);
+  const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(() => new Set());
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
 
   const advanceTurn = () => {
-    setGameState((currentState) => tick(currentState));
+    const nextState = tick(gameState);
+    setGameState(nextState);
+    setActiveEvent(findTriggeredEvent(nextState, resolvedEventIds) ?? null);
+  };
+
+  const resolveEvent = (option: RuntimeGameEventOption) => {
+    if (activeEvent === null) return;
+
+    setGameState((currentState) => option.effect(currentState));
+    setResolvedEventIds((currentIds) => new Set(currentIds).add(activeEvent.id));
+    setActiveEvent(null);
   };
 
   return (
@@ -157,7 +175,7 @@ export function GameDashboard({
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">
-            <Button type="button" size="lg" onClick={advanceTurn} data-testid="next-turn-button">
+            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null} data-testid="next-turn-button">
               下一回合 <ChevronRight />
             </Button>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
@@ -188,6 +206,8 @@ export function GameDashboard({
         <p><span className="footer-pulse" aria-hidden="true" /> 数据持续消耗。世界持续变化。</p>
         <span>回合 {String(gameState.turn).padStart(2, "0")} / 模拟持续运行</span>
       </footer>
+
+      {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
     </main>
   );
 }

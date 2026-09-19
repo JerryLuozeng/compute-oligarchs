@@ -1,0 +1,81 @@
+.event-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  overflow-y: auto;
+  place-items: center;
+  padding: 32px;
+  background: rgb(2 4 3 / 0.88);
+  backdrop-filter: blur(5px) saturate(0.65);
+}
+
+.event-overlay::before {
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgb(255 255 255 / 0.025) 3px 4px);
+  content: "";
+  pointer-events: none;
+}
+
+.event-dialog {
+  --event-accent: #ff4d2e;
+  position: relative;
+  width: min(760px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--event-accent);
+  border-top-width: 3px;
+  color: #e5ebe3;
+  background: #0d110e;
+  box-shadow: 18px 18px 0 rgb(0 0 0 / 0.42), 0 0 54px color-mix(in srgb, var(--event-accent) 16%, transparent);
+  animation: event-enter 180ms steps(3, end) both;
+}
+
+.event-dialog--labor_struggle { --event-accent: #19e3ff; }
+.event-dialog--compute_monopoly { --event-accent: #b6ff3b; }
+.event-dialog--data_leak { --event-accent: #ff2bd6; }
+.event-dialog--model_drift { --event-accent: #ff4d2e; }
+.event-dialog--open_source_commons { --event-accent: #68d391; }
+.event-dialog__noise { position: absolute; inset: 0; background-image: radial-gradient(rgb(255 255 255 / 0.13) 0.6px, transparent 0.6px); background-size: 5px 5px; opacity: 0.04; pointer-events: none; }
+.event-dialog__header { position: relative; display: flex; min-height: 54px; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid rgb(138 146 140 / 0.25); padding: 0 22px; color: #8a928c; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.16em; }
+.event-dialog__header span { display: flex; align-items: center; gap: 8px; }
+.event-dialog__header svg { width: 14px; color: var(--event-accent); }
+.event-dialog__theme { color: var(--event-accent); }
+.event-dialog__theme i { width: 6px; height: 6px; background: var(--event-accent); box-shadow: 0 0 10px var(--event-accent); }
+.event-dialog__body { position: relative; padding: 34px 34px 27px; }
+.event-dialog__eyebrow, .event-dialog__trigger { display: flex; align-items: center; gap: 8px; color: var(--event-accent); font: 600 9px/1.4 "Cascadia Mono", monospace; letter-spacing: 0.16em; }
+.event-dialog__eyebrow { margin: 0 0 17px; }
+.event-dialog__eyebrow svg, .event-dialog__trigger svg { width: 13px; flex: none; }
+.event-dialog h2 { position: relative; margin: 0; font: 800 48px/1 "Bahnschrift", sans-serif; letter-spacing: 0; }
+.event-dialog h2::after { position: absolute; top: 2px; left: 3px; z-index: -1; color: #19e3ff; content: attr(data-text); clip-path: inset(58% 0 15%); opacity: 0.5; }
+.event-dialog__description { margin: 24px 0 0; color: #b4bbb6; font-size: 14px; line-height: 1.85; }
+.event-dialog blockquote { margin: 23px 0 0; border-left: 2px solid var(--event-accent); padding: 3px 0 3px 15px; color: #8a928c; font-size: 12px; line-height: 1.75; }
+.event-dialog__trigger { margin: 24px 0 0; color: #737c76; letter-spacing: 0; }
+.event-dialog__options { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid rgb(138 146 140 / 0.25); }
+.event-dialog__options button { position: relative; display: grid; min-height: 116px; grid-template-columns: 1fr auto; align-content: center; gap: 10px 14px; border: 0; border-right: 1px solid rgb(138 146 140 / 0.25); border-radius: 0; padding: 22px 26px; color: #e5ebe3; background: rgb(17 21 18 / 0.9); cursor: pointer; text-align: left; }
+.event-dialog__options button:last-child { border-right: 0; }
+.event-dialog__options button:hover, .event-dialog__options button:focus-visible { outline: 1px solid var(--event-accent); outline-offset: -2px; background: color-mix(in srgb, var(--event-accent) 10%, #111512); }
+.event-dialog__options span { grid-column: 1 / -1; color: var(--event-accent); font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.14em; }
+.event-dialog__options strong { font: 700 14px/1.5 "Bahnschrift", sans-serif; }
+.event-dialog__options svg { width: 17px; align-self: center; color: var(--event-accent); }
+.event-dialog__footer { position: relative; border-top: 1px solid rgb(138 146 140 / 0.25); padding: 13px 22px; color: #626a64; font: 9px/1.4 "Cascadia Mono", monospace; letter-spacing: 0.08em; }
+
+@keyframes event-enter {
+  from { opacity: 0; transform: translate(10px, -6px); }
+  45% { opacity: 1; transform: translate(-4px, 2px); }
+  to { opacity: 1; transform: translate(0); }
+}
+
+@media (max-width: 620px) {
+  .event-overlay { place-items: start center; padding: 18px 12px; }
+  .event-dialog__header { align-items: flex-start; flex-direction: column; gap: 8px; padding-block: 14px; }
+  .event-dialog__body { padding: 26px 20px 22px; }
+  .event-dialog h2 { font-size: 36px; }
+  .event-dialog__options { grid-template-columns: 1fr; }
+  .event-dialog__options button { min-height: 96px; border-right: 0; border-bottom: 1px solid rgb(138 146 140 / 0.25); padding: 18px 20px; }
+  .event-dialog__options button:last-child { border-bottom: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-dialog { animation-duration: 0.01ms !important; }
+}
