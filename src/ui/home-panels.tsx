@@ -46,7 +46,7 @@ export function LoadGameDialog({
               ) : (
                 <>
                   <strong>{getFactionProfile(save.selectedFactionId).name}</strong>
-                  <span className="save-slot__meta"><Clock3 />回合 {save.gameState.turn}</span>
+                  <span className="save-slot__meta"><Clock3 />回合 {save.session.gameState.turn}</span>
                   <small>{save.savedAt.slice(0, 16).replace("T", " ")} UTC</small>
                   <ArrowRight className="save-slot__arrow" />
                 </>
@@ -55,6 +55,44 @@ export function LoadGameDialog({
           );
         })}
       </div>
+    </HomeDialog>
+  );
+}
+
+export function SaveGameDialog({
+  slots,
+  status,
+  onClose,
+  onSave
+}: {
+  slots: readonly SaveSlot[];
+  status: string;
+  onClose: () => void;
+  onSave: (slot: number) => void;
+}) {
+  return (
+    <HomeDialog code="LOCAL ARCHIVE / WRITE" title="保存进度" onClose={onClose}>
+      <p className="home-dialog__intro">选择一个档位写入当前完整进度。已有档案会被本次进度覆盖。</p>
+      <div className="save-slot-grid" aria-label="保存档位">
+        {slots.map((slot) => (
+          <button
+            className={`save-slot save-slot--write save-slot--${slot.status}`}
+            type="button"
+            key={slot.index}
+            onClick={() => onSave(slot.index)}
+          >
+            <span className="save-slot__number">SLOT {String(slot.index).padStart(2, "0")}</span>
+            <HardDrive />
+            <strong>{slot.status === "ready" ? "覆盖档案" : "写入档案"}</strong>
+            <small>
+              {slot.savedGame === null
+                ? slot.status === "invalid" ? "替换损坏档案" : "空档位"
+                : `${getFactionProfile(slot.savedGame.selectedFactionId).name} / 回合 ${slot.savedGame.session.gameState.turn}`}
+            </small>
+          </button>
+        ))}
+      </div>
+      <p className="save-dialog__status" role="status">{status}</p>
     </HomeDialog>
   );
 }
