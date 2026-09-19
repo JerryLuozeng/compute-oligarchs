@@ -7,6 +7,7 @@ import {
   Database,
   FolderClock,
   Info,
+  Lightbulb,
   Radio,
   ShieldCheck,
   TriangleAlert,
@@ -24,9 +25,15 @@ import {
 } from "@/content/event-runtime";
 import { evaluateEnding, type EndingResult } from "@/content/endings";
 import { getFactionProfile } from "@/content/factions";
+import {
+  createLampTendencyState,
+  recordLampAllocation,
+  type LampAllocation
+} from "@/content/lamps";
 import { Button } from "./button";
 import { EndingDialog } from "./ending-dialog";
 import { EventDialog } from "./event-dialog";
+import { LampAllocationDialog, LampStatusBoard } from "./lamp-allocation";
 import { MapTiles } from "./map-tiles";
 import { TutorialOverlay } from "./tutorial-overlay";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
@@ -105,11 +112,13 @@ export function GameDashboard({
   const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(() => new Set());
   const [ending, setEnding] = useState<EndingResult | null>(null);
   const [tutorialOpen, setTutorialOpen] = useState(() => !isTutorialComplete(window.localStorage));
+  const [lampState, setLampState] = useState(createLampTendencyState);
+  const [lampOpen, setLampOpen] = useState(() => isTutorialComplete(window.localStorage));
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
 
   const advanceTurn = () => {
-    if (activeEvent !== null || ending !== null) return;
+    if (activeEvent !== null || ending !== null || lampState.allocationCount === 0) return;
 
     const nextState = tick(gameState);
     const nextEnding = evaluateEnding(nextState, selectedFactionId);
@@ -136,12 +145,20 @@ export function GameDashboard({
     setActiveEvent(null);
     setResolvedEventIds(new Set());
     setEnding(null);
+    setLampState(createLampTendencyState());
+    setLampOpen(true);
     window.scrollTo({ top: 0, left: 0 });
   };
 
   const dismissTutorial = () => {
     markTutorialComplete(window.localStorage);
     setTutorialOpen(false);
+    if (lampState.allocationCount === 0) setLampOpen(true);
+  };
+
+  const confirmLampAllocation = (allocation: LampAllocation) => {
+    setLampState((currentState) => recordLampAllocation(currentState, allocation));
+    setLampOpen(false);
   };
 
   return (
@@ -191,6 +208,8 @@ export function GameDashboard({
         </div>
       </section>
 
+      <LampStatusBoard state={lampState} onOpen={() => setLampOpen(true)} />
+
       <section className="game-workspace" aria-label="主游戏工作区">
         <aside className="game-sidebar">
           <div className="player-faction" data-tutorial="faction-status">
@@ -208,10 +227,11 @@ export function GameDashboard({
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">
-            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || ending !== null} data-testid="next-turn-button" data-tutorial="turn-control">
+            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || ending !== null || lampState.allocationCount === 0} data-testid="next-turn-button" data-tutorial="turn-control">
               下一回合 <ChevronRight />
             </Button>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
+            <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
             <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
             <button className="game-action" type="button" disabled title="后续版本开放"><FolderClock />保存进度<span>待开放</span></button>
             <button className="game-action" type="button" onClick={onChangeFaction}><Users />更换势力</button>
@@ -241,6 +261,14 @@ export function GameDashboard({
       </footer>
 
       {tutorialOpen ? <TutorialOverlay onDismiss={dismissTutorial} /> : null}
+      {lampOpen ? (
+        <LampAllocationDialog
+          current={lampState.current}
+          required={lampState.allocationCount === 0}
+          onClose={() => setLampOpen(false)}
+          onConfirm={confirmLampAllocation}
+        />
+      ) : null}
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
       {ending === null ? null : (
         <EndingDialog ending={ending} onReturnToMenu={onReturnToMenu} onRestart={restartGame} />
