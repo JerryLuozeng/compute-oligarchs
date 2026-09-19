@@ -6,6 +6,7 @@ import {
   Cpu,
   Database,
   FolderClock,
+  House,
   Info,
   Lightbulb,
   MessageSquareQuote,
@@ -27,16 +28,14 @@ import {
 import { evaluateEnding, evaluateNarrativeEnding, type EndingResult } from "@/content/endings";
 import { createChapterSettlement, type ChapterSettlement } from "@/content/chapter-settlements";
 import { getFactionProfile } from "@/content/factions";
-import { applyFactionArcChange, createFactionArcState, factionRoutes } from "@/content/faction-routes";
+import { applyFactionArcChange, factionRoutes } from "@/content/faction-routes";
 import {
   applyAdvisorTrust,
-  createAdvisorTrustState,
   getFactionAdvisors,
   getStoryPerspective
 } from "@/content/faction-story";
 import {
   advanceStoryChapter,
-  createStoryProgress,
   findNextStoryEvent,
   getStoryChapter,
   isStoryComplete,
@@ -46,7 +45,6 @@ import {
 } from "@/content/story-events";
 import {
   beginLampChapter,
-  createLampTendencyState,
   recordLampAllocation,
   type LampAllocation
 } from "@/content/lamps";
@@ -56,6 +54,14 @@ import { EndingDialog } from "./ending-dialog";
 import { EventDialog } from "./event-dialog";
 import { LampAllocationDialog, LampStatusBoard } from "./lamp-allocation";
 import { MapTiles } from "./map-tiles";
+import { SaveGameDialog } from "./home-panels";
+import {
+  createGameSession,
+  readSaveSlots,
+  writeSaveSlot,
+  type GameSession,
+  type SaveSlot
+} from "./save-slots";
 import { StoryDialog } from "./story-dialog";
 import { TutorialOverlay } from "./tutorial-overlay";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
@@ -118,30 +124,39 @@ function FactionCard({ faction, index }: { faction: Faction; index: number }) {
 }
 
 export function GameDashboard({
-  initialState = initialGameState,
+  initialSession,
   selectedFactionId,
   onChangeFaction,
   onReturnToMenu
 }: {
-  initialState?: GameState;
+  initialSession?: GameSession;
   selectedFactionId: FactionId;
   onChangeFaction: () => void;
   onReturnToMenu: () => void;
 }) {
-  const [gameState, setGameState] = useState<GameState>(initialState);
+  const startingSession = initialSession ?? createGameSession(initialGameState, selectedFactionId);
+  const [gameState, setGameState] = useState<GameState>(startingSession.gameState);
   const [glitchEnabled, setGlitchEnabled] = useState(true);
   const [activeEvent, setActiveEvent] = useState<RuntimeGameEvent | null>(null);
-  const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(
+    () => new Set(startingSession.resolvedEventIds)
+  );
   const [ending, setEnding] = useState<EndingResult | null>(null);
-  const [tutorialOpen, setTutorialOpen] = useState(() => !isTutorialComplete(window.localStorage));
-  const [lampState, setLampState] = useState(createLampTendencyState);
-  const [lampOpen, setLampOpen] = useState(() => isTutorialComplete(window.localStorage));
-  const [arcState, setArcState] = useState(() => createFactionArcState(initialState, selectedFactionId));
-  const [advisorTrust, setAdvisorTrust] = useState(createAdvisorTrustState);
-  const [storyProgress, setStoryProgress] = useState(createStoryProgress);
+  const [tutorialOpen, setTutorialOpen] = useState(
+    () => initialSession === undefined && !isTutorialComplete(window.localStorage)
+  );
+  const [lampState, setLampState] = useState(startingSession.lampState);
+  const [lampOpen, setLampOpen] = useState(
+    () => startingSession.lampState.allocationCount === 0 && isTutorialComplete(window.localStorage)
+  );
+  const [arcState, setArcState] = useState(startingSession.arcState);
+  const [advisorTrust, setAdvisorTrust] = useState(startingSession.advisorTrust);
+  const [storyProgress, setStoryProgress] = useState(startingSession.storyProgress);
   const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
   const [settlement, setSettlement] = useState<ChapterSettlement | null>(null);
+  const [saveSlots, setSaveSlots] = useState<readonly SaveSlot[] | null>(null);
+  const [saveStatus, setSaveStatus] = useState("");
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
   const selectedRoute = factionRoutes[selectedFactionId];
@@ -173,19 +188,47 @@ export function GameDashboard({
   };
 
   const restartGame = () => {
-    setGameState(initialGameState);
+    const freshSession = createGameSession(initialGameState, selectedFactionId);
+    setGameState(freshSession.gameState);
     setActiveEvent(null);
     setResolvedEventIds(new Set());
     setEnding(null);
-    setLampState(createLampTendencyState());
-    setArcState(createFactionArcState(initialGameState, selectedFactionId));
-    setAdvisorTrust(createAdvisorTrustState());
-    setStoryProgress(createStoryProgress());
+    setLampState(freshSession.lampState);
+    setArcState(freshSession.arcState);
+    setAdvisorTrust(freshSession.advisorTrust);
+    setStoryProgress(freshSession.storyProgress);
     setActiveStory(null);
     setStoryChoice(null);
     setSettlement(null);
+    setSaveSlots(null);
+    setSaveStatus("");
     setLampOpen(true);
     window.scrollTo({ top: 0, left: 0 });
+  };
+
+  const currentSession = (): GameSession => ({
+    gameState,
+    lampState,
+    arcState,
+    advisorTrust,
+    storyProgress,
+    resolvedEventIds: [...resolvedEventIds]
+  });
+
+  const openSaveDialog = () => {
+    setSaveSlots(readSaveSlots(window.localStorage));
+    setSaveStatus("请选择一个档位。");
+  };
+
+  const saveToSlot = (slot: number) => {
+    const saved = writeSaveSlot(
+      window.localStorage,
+      slot,
+      selectedFactionId,
+      currentSession()
+    );
+    setSaveStatus(saved === null ? "保存失败：无法写入本地档案。" : `档位 ${slot} 已保存。`);
+    setSaveSlots(readSaveSlots(window.localStorage));
   };
 
   const dismissTutorial = () => {
@@ -341,8 +384,9 @@ export function GameDashboard({
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
             <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
             <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
-            <button className="game-action" type="button" disabled title="后续版本开放"><FolderClock />保存进度<span>待开放</span></button>
+            <button className="game-action" type="button" onClick={openSaveDialog}><FolderClock />保存进度<span>六档</span></button>
             <button className="game-action" type="button" onClick={onChangeFaction}><Users />更换势力</button>
+            <button className="game-action" type="button" onClick={onReturnToMenu}><House />返回主菜单</button>
           </nav>
         </aside>
 
@@ -378,6 +422,14 @@ export function GameDashboard({
         />
       ) : null}
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
+      {saveSlots === null ? null : (
+        <SaveGameDialog
+          slots={saveSlots}
+          status={saveStatus}
+          onClose={() => setSaveSlots(null)}
+          onSave={saveToSlot}
+        />
+      )}
       {settlement === null ? null : <ChapterSettlementDialog settlement={settlement} onContinue={continueSettlement} />}
       {activeStory === null ? null : (
         <StoryDialog

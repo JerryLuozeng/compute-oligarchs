@@ -89,6 +89,9 @@
 .save-slot__meta svg { width: 12px; }
 .save-slot__arrow { position: absolute; right: 17px; bottom: 16px; width: 16px; color: #b6ff3b; }
 .save-slot--invalid { border-color: rgb(255 77 46 / 0.42); }
+.save-slot--write { grid-template-columns: 28px minmax(0, 1fr); }
+.save-slot--write:hover, .save-slot--write:focus-visible { border-color: #19e3ff; outline: none; }
+.save-dialog__status { min-height: 18px; margin: 18px 0 0; color: #b6ff3b; font: 600 10px/1.6 "Cascadia Mono", monospace; }
 
 .settings-list { display: grid; border-top: 1px solid var(--flow-line); }
 .setting-row { display: grid; min-height: 88px; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 14px; border-bottom: 1px solid var(--flow-line); }
