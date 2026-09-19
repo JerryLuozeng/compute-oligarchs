@@ -8,6 +8,9 @@
 .story-dialog__perspective { margin: 18px 0 0; border-left: 2px solid #19e3ff; padding: 8px 11px; color: #9db7b5; background: rgb(25 227 255 / 0.06); font: 500 10px/1.55 "Cascadia Mono", monospace; }
 .story-dialog__echo { display: flex; align-items: center; gap: 8px; margin: 18px 0 0; color: #b6ff3b; font: 600 10px/1.5 "Cascadia Mono", monospace; }
 .story-dialog__echo svg { width: 14px; flex: 0 0 auto; }
+.story-dialog__legacy { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; border: 1px solid rgb(255 157 59 / 0.3); padding: 9px 11px; color: #ffba70; background: rgb(255 157 59 / 0.06); font: 600 10px/1.5 "Cascadia Mono", monospace; }
+.story-dialog__legacy--recorded { border-color: rgb(182 255 59 / 0.32); color: #b6ff3b; background: rgb(182 255 59 / 0.06); }
+.story-dialog__legacy svg { width: 14px; height: 14px; flex: 0 0 auto; }
 .story-dialog .event-dialog__options button small { display: flex; align-items: flex-start; gap: 7px; margin-top: 10px; color: #9db7b5; font: 500 9px/1.5 "Cascadia Mono", monospace; text-align: left; }
 .story-dialog .event-dialog__options button small svg { width: 13px; height: 13px; margin-top: 1px; flex: 0 0 auto; color: #19e3ff; }
 .story-dialog .event-dialog__options button small span { grid-column: auto; color: inherit; font: inherit; letter-spacing: 0; }

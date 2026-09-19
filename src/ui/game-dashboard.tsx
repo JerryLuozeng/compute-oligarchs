@@ -44,6 +44,11 @@ import {
   type StoryEvent
 } from "@/content/story-events";
 import {
+  applyPolicyChoice,
+  getPolicyChoiceNotice,
+  getPolicyLegacyEcho
+} from "@/content/policy-legacies";
+import {
   beginLampChapter,
   recordLampAllocation,
   type LampAllocation
@@ -153,6 +158,7 @@ export function GameDashboard({
   const [arcState, setArcState] = useState(startingSession.arcState);
   const [advisorTrust, setAdvisorTrust] = useState(startingSession.advisorTrust);
   const [storyProgress, setStoryProgress] = useState(startingSession.storyProgress);
+  const [policyLegacyState, setPolicyLegacyState] = useState(startingSession.policyLegacyState);
   const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
   const [settlement, setSettlement] = useState<ChapterSettlement | null>(null);
@@ -223,6 +229,7 @@ export function GameDashboard({
     setArcState(freshSession.arcState);
     setAdvisorTrust(freshSession.advisorTrust);
     setStoryProgress(freshSession.storyProgress);
+    setPolicyLegacyState(freshSession.policyLegacyState);
     setActiveStory(null);
     setStoryChoice(null);
     setSettlement(null);
@@ -238,6 +245,7 @@ export function GameDashboard({
     arcState,
     advisorTrust,
     storyProgress,
+    policyLegacyState,
     resolvedEventIds: [...resolvedEventIds]
   });
 
@@ -273,6 +281,7 @@ export function GameDashboard({
     setStoryProgress((current) => recordStoryChoice(current, activeStory, choice.id));
     setArcState((current) => applyFactionArcChange(current, choice.arcChange ?? {}));
     setAdvisorTrust((current) => applyAdvisorTrust(current, choice.advisorId));
+    setPolicyLegacyState((current) => applyPolicyChoice(current, activeStory.id, choice.id, gameState.turn));
     setStoryChoice(choice);
   };
 
@@ -470,6 +479,8 @@ export function GameDashboard({
           lifelineLabel={selectedRoute.lifeline}
           liabilityLabel={selectedRoute.liability}
           timeLabel={currentTime.label}
+          legacyEcho={getPolicyLegacyEcho(policyLegacyState, activeStory.id)?.description}
+          legacyNotice={storyChoice === null ? undefined : getPolicyChoiceNotice(activeStory.id, storyChoice.id)}
           onChoose={chooseStory}
           onContinue={continueStory}
         />

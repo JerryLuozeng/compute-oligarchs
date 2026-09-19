@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, BookOpen, Gauge, MessageSquareQuote, RadioTower, TimerReset } from "lucide-react";
+import { ArrowRight, BookOpen, Gauge, History, MessageSquareQuote, RadioTower, TimerReset } from "lucide-react";
 import type { StoryChoice, StoryEvent } from "@/content/story-events";
 import { getAdvisor } from "@/content/faction-story";
 import { getDecisionImpacts } from "./time-flow";
@@ -71,6 +71,8 @@ export function StoryDialog({
   lifelineLabel,
   liabilityLabel,
   timeLabel,
+  legacyEcho,
+  legacyNotice,
   onChoose,
   onContinue
 }: {
@@ -80,6 +82,8 @@ export function StoryDialog({
   lifelineLabel: string;
   liabilityLabel: string;
   timeLabel: string;
+  legacyEcho?: string;
+  legacyNotice?: string;
   onChoose: (choice: StoryChoice) => void;
   onContinue: () => void;
 }) {
@@ -130,6 +134,12 @@ export function StoryDialog({
             {selectedChoice?.outcome ?? event.description}
           </p>
           {selectedChoice === null ? <p className="story-dialog__perspective">{perspective}</p> : null}
+          {selectedChoice === null && legacyEcho !== undefined ? (
+            <p className="story-dialog__legacy"><History /> 历史回声：{legacyEcho}</p>
+          ) : null}
+          {selectedChoice !== null && legacyNotice !== undefined ? (
+            <p className="story-dialog__legacy story-dialog__legacy--recorded"><History /> {legacyNotice}</p>
+          ) : null}
           {selectedChoice?.advisorId === undefined ? null : (
             <p className="story-dialog__echo">
               <MessageSquareQuote /> {getAdvisor(selectedChoice.advisorId).name}会记住你的选择。
