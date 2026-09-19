@@ -87,15 +87,17 @@ function FactionCard({ faction, index }: { faction: Faction; index: number }) {
 }
 
 export function GameDashboard({
+  initialState = initialGameState,
   selectedFactionId,
   onChangeFaction,
   onReturnToMenu
 }: {
+  initialState?: GameState;
   selectedFactionId: FactionId;
   onChangeFaction: () => void;
   onReturnToMenu: () => void;
 }) {
-  const [gameState, setGameState] = useState<GameState>(initialGameState);
+  const [gameState, setGameState] = useState<GameState>(initialState);
   const [glitchEnabled, setGlitchEnabled] = useState(true);
   const [activeEvent, setActiveEvent] = useState<RuntimeGameEvent | null>(null);
   const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(() => new Set());
