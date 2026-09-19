@@ -60,6 +60,7 @@
 .eyebrow--alert { gap: 8px; color: #ff4d2e; }
 .eyebrow--alert svg { width: 14px; }
 .turn-display { margin: 30px 0 7px; color: #b6ff3b; font: 700 18px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.story-chapter-label { margin: 17px 0 -18px; color: #ff9d3b; font: 600 10px/1.4 "Cascadia Mono", monospace; }
 .turn-display span { color: #8a928c; font-size: 10px; letter-spacing: 0.2em; }
 .dashboard-title { max-width: 720px; margin: 0; font: 800 58px/0.95 "Bahnschrift", sans-serif; letter-spacing: 0; }
 .glitch-enabled .glitch-target { text-shadow: 2px 0 #ff2bd6, -2px 0 #19e3ff; animation: title-jitter 5s steps(1, end) infinite; }
@@ -95,6 +96,8 @@
 .player-faction__arc-row i { position: absolute; bottom: 0; left: 0; z-index: 1; height: 2px; background: currentColor; }
 .game-actions { display: grid; gap: 5px; }
 .game-actions > button:first-child { width: 100%; justify-content: space-between; }
+.game-action--story { border-color: rgb(255 157 59 / 0.5); color: #ff9d3b; }
+.game-action--story:hover:not(:disabled) { border-color: #ff9d3b; color: #ff9d3b; }
 .game-action { display: flex; min-height: 42px; align-items: center; gap: 9px; border: 1px solid var(--dashboard-border); padding: 0 12px; color: #aab1ac; background: rgb(17 21 18 / 0.82); cursor: pointer; font: 600 10px/1 "Cascadia Mono", monospace; text-align: left; }
 .game-action:hover:not(:disabled), .game-action--active { border-color: #19e3ff; color: #19e3ff; }
 .game-action:disabled { cursor: not-allowed; opacity: 0.5; }

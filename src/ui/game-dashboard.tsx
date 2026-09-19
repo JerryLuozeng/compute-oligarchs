@@ -27,6 +27,17 @@ import { evaluateEnding, type EndingResult } from "@/content/endings";
 import { getFactionProfile } from "@/content/factions";
 import { createFactionArcState, factionRoutes } from "@/content/faction-routes";
 import {
+  advanceStoryChapter,
+  createStoryProgress,
+  findNextStoryEvent,
+  getStoryChapter,
+  isStoryComplete,
+  recordStoryChoice,
+  type StoryChoice,
+  type StoryEvent
+} from "@/content/story-events";
+import {
+  beginLampChapter,
   createLampTendencyState,
   recordLampAllocation,
   type LampAllocation
@@ -36,6 +47,7 @@ import { EndingDialog } from "./ending-dialog";
 import { EventDialog } from "./event-dialog";
 import { LampAllocationDialog, LampStatusBoard } from "./lamp-allocation";
 import { MapTiles } from "./map-tiles";
+import { StoryDialog } from "./story-dialog";
 import { TutorialOverlay } from "./tutorial-overlay";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
 import "./game-dashboard.css";
@@ -116,12 +128,17 @@ export function GameDashboard({
   const [lampState, setLampState] = useState(createLampTendencyState);
   const [lampOpen, setLampOpen] = useState(() => isTutorialComplete(window.localStorage));
   const [arcState, setArcState] = useState(() => createFactionArcState(initialState, selectedFactionId));
+  const [storyProgress, setStoryProgress] = useState(createStoryProgress);
+  const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
+  const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
   const selectedRoute = factionRoutes[selectedFactionId];
+  const storyComplete = isStoryComplete(storyProgress, lampState);
+  const pendingStory = findNextStoryEvent(storyProgress, lampState);
 
   const advanceTurn = () => {
-    if (activeEvent !== null || ending !== null || lampState.allocationCount === 0) return;
+    if (activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0) return;
 
     const nextState = tick(gameState);
     const nextEnding = evaluateEnding(nextState, selectedFactionId);
@@ -150,6 +167,9 @@ export function GameDashboard({
     setEnding(null);
     setLampState(createLampTendencyState());
     setArcState(createFactionArcState(initialGameState, selectedFactionId));
+    setStoryProgress(createStoryProgress());
+    setActiveStory(null);
+    setStoryChoice(null);
     setLampOpen(true);
     window.scrollTo({ top: 0, left: 0 });
   };
@@ -163,6 +183,28 @@ export function GameDashboard({
   const confirmLampAllocation = (allocation: LampAllocation) => {
     setLampState((currentState) => recordLampAllocation(currentState, allocation));
     setLampOpen(false);
+  };
+
+  const advanceStory = () => {
+    if (activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0) return;
+    if (pendingStory !== undefined) {
+      setActiveStory(pendingStory);
+      setStoryChoice(null);
+      return;
+    }
+
+    const nextProgress = advanceStoryChapter(storyProgress, lampState);
+    if (nextProgress !== storyProgress) {
+      setStoryProgress(nextProgress);
+      setLampState((current) => beginLampChapter(current));
+      setLampOpen(true);
+    }
+  };
+
+  const chooseStory = (choice: StoryChoice) => {
+    if (activeStory === null || storyChoice !== null) return;
+    setStoryProgress((current) => recordStoryChoice(current, activeStory, choice.id));
+    setStoryChoice(choice);
   };
 
   return (
@@ -196,6 +238,7 @@ export function GameDashboard({
       <section className="dashboard-intro dashboard-intro--compact">
         <div>
           <p className="eyebrow eyebrow--alert"><Activity /> QUARTERLY STATE REPORT</p>
+          <p className="story-chapter-label">{getStoryChapter(storyProgress)} / {selectedRoute.title}</p>
           <p className="turn-display" data-testid="turn-number">
             <span>回合</span> {String(gameState.turn).padStart(2, "0")}
           </p>
@@ -243,9 +286,13 @@ export function GameDashboard({
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">
-            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || ending !== null || lampState.allocationCount === 0} data-testid="next-turn-button" data-tutorial="turn-control">
+            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0} data-testid="next-turn-button" data-tutorial="turn-control">
               下一回合 <ChevronRight />
             </Button>
+            <button className="game-action game-action--story" type="button" onClick={advanceStory} disabled={activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0 || storyComplete}>
+              <BookOpen />{storyComplete ? "剧情已完结" : pendingStory === undefined ? "进入下一章" : "推进剧情"}
+              <span>{storyComplete ? "终" : pendingStory?.id ?? "下一章"}</span>
+            </button>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
             <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
             <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
@@ -286,6 +333,14 @@ export function GameDashboard({
         />
       ) : null}
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
+      {activeStory === null ? null : (
+        <StoryDialog
+          event={activeStory}
+          selectedChoice={storyChoice}
+          onChoose={chooseStory}
+          onContinue={() => { setActiveStory(null); setStoryChoice(null); }}
+        />
+      )}
       {ending === null ? null : (
         <EndingDialog ending={ending} onReturnToMenu={onReturnToMenu} onRestart={restartGame} />
       )}
