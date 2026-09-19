@@ -1,0 +1,24 @@
+.settlement-overlay { position: fixed; inset: 0; z-index: 115; display: grid; place-items: center; overflow-y: auto; padding: 24px; background: rgb(2 4 3 / 0.86); backdrop-filter: blur(6px) saturate(0.6); }
+.settlement-dialog { --settlement-accent: #19e3ff; position: relative; width: min(760px, 100%); overflow: hidden; border: 1px solid var(--settlement-accent); border-top-width: 3px; color: #e5ebe3; background: #0d110e; box-shadow: 14px 14px 0 rgb(0 0 0 / 0.42), 0 0 50px rgb(25 227 255 / 0.12); }
+.settlement-dialog__noise { position: absolute; inset: 0; background-image: radial-gradient(rgb(255 255 255 / 0.14) 0.6px, transparent 0.6px); background-size: 5px 5px; opacity: 0.04; pointer-events: none; }
+.settlement-dialog__header { position: relative; display: flex; min-height: 54px; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid rgb(138 146 140 / 0.25); padding: 0 22px; color: #8a928c; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.settlement-dialog__header span { display: flex; align-items: center; gap: 8px; }
+.settlement-dialog__header span:first-child, .settlement-dialog__header svg { color: var(--settlement-accent); }
+.settlement-dialog__header svg { width: 14px; }
+.settlement-dialog__body { position: relative; padding: 34px 34px 28px; }
+.settlement-dialog__eyebrow { margin: 0 0 15px; color: var(--settlement-accent); font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.16em; }
+.settlement-dialog h2 { margin: 0; font: 800 43px/1.05 "Bahnschrift", sans-serif; }
+.settlement-dialog__summary { margin: 22px 0 0; color: #b4bbb6; font-size: 14px; line-height: 1.8; }
+.settlement-dialog__echoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 25px; }
+.settlement-dialog__echoes p { margin: 0; border-left: 2px solid var(--settlement-accent); padding: 10px 12px; color: #9da9a1; background: rgb(25 227 255 / 0.045); font-size: 11px; line-height: 1.7; }
+.settlement-dialog__echoes p:last-child { border-color: #ff9d3b; background: rgb(255 157 59 / 0.045); }
+.settlement-dialog__echoes strong { display: block; margin-bottom: 5px; color: var(--settlement-accent); font: 700 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.settlement-dialog__echoes p:last-child strong { color: #ff9d3b; }
+.settlement-dialog__statuses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; margin-top: 24px; }
+.settlement-dialog__statuses span { display: grid; gap: 7px; min-width: 0; color: #7e8981; font: 600 9px/1.3 "Cascadia Mono", monospace; }
+.settlement-dialog__statuses b { color: #e5ebe3; font-size: 9px; font-weight: 600; }
+.settlement-dialog__actions { position: relative; display: flex; justify-content: flex-end; border-top: 1px solid rgb(138 146 140 / 0.25); padding: 14px 20px; }
+.settlement-dialog__actions button { display: flex; min-height: 42px; align-items: center; gap: 9px; border: 1px solid var(--settlement-accent); padding: 0 17px; color: #0d110e; background: var(--settlement-accent); cursor: pointer; font: 700 11px/1 "Bahnschrift", sans-serif; }
+.settlement-dialog__actions button:hover, .settlement-dialog__actions button:focus-visible { outline: 2px solid #b6ff3b; outline-offset: 2px; }
+.settlement-dialog__actions svg { width: 15px; }
+@media (max-width: 640px) { .settlement-overlay { place-items: start center; padding: 14px 10px; } .settlement-dialog__header { align-items: flex-start; flex-direction: column; gap: 8px; padding-block: 14px; } .settlement-dialog__body { padding: 28px 20px 23px; } .settlement-dialog h2 { font-size: 34px; } .settlement-dialog__echoes, .settlement-dialog__statuses { grid-template-columns: 1fr; } .settlement-dialog__statuses { gap: 11px; } .settlement-dialog__actions button { width: 100%; justify-content: center; } }

@@ -24,7 +24,8 @@ import {
   type RuntimeGameEvent,
   type RuntimeGameEventOption
 } from "@/content/event-runtime";
-import { evaluateEnding, type EndingResult } from "@/content/endings";
+import { evaluateEnding, evaluateNarrativeEnding, type EndingResult } from "@/content/endings";
+import { createChapterSettlement, type ChapterSettlement } from "@/content/chapter-settlements";
 import { getFactionProfile } from "@/content/factions";
 import { applyFactionArcChange, createFactionArcState, factionRoutes } from "@/content/faction-routes";
 import {
@@ -50,6 +51,7 @@ import {
   type LampAllocation
 } from "@/content/lamps";
 import { Button } from "./button";
+import { ChapterSettlementDialog } from "./chapter-settlement-dialog";
 import { EndingDialog } from "./ending-dialog";
 import { EventDialog } from "./event-dialog";
 import { LampAllocationDialog, LampStatusBoard } from "./lamp-allocation";
@@ -139,6 +141,7 @@ export function GameDashboard({
   const [storyProgress, setStoryProgress] = useState(createStoryProgress);
   const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
+  const [settlement, setSettlement] = useState<ChapterSettlement | null>(null);
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
   const selectedRoute = factionRoutes[selectedFactionId];
@@ -180,6 +183,7 @@ export function GameDashboard({
     setStoryProgress(createStoryProgress());
     setActiveStory(null);
     setStoryChoice(null);
+    setSettlement(null);
     setLampOpen(true);
     window.scrollTo({ top: 0, left: 0 });
   };
@@ -196,7 +200,7 @@ export function GameDashboard({
   };
 
   const advanceStory = () => {
-    if (activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0) return;
+    if (activeEvent !== null || activeStory !== null || ending !== null || settlement !== null || lampState.chapterAllocationCount === 0) return;
     if (pendingStory !== undefined) {
       setActiveStory(pendingStory);
       setStoryChoice(null);
@@ -205,9 +209,7 @@ export function GameDashboard({
 
     const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId, gameState);
     if (nextProgress !== storyProgress) {
-      setStoryProgress(nextProgress);
-      setLampState((current) => beginLampChapter(current));
-      setLampOpen(true);
+      setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
     }
   };
 
@@ -217,6 +219,28 @@ export function GameDashboard({
     setArcState((current) => applyFactionArcChange(current, choice.arcChange ?? {}));
     setAdvisorTrust((current) => applyAdvisorTrust(current, choice.advisorId));
     setStoryChoice(choice);
+  };
+
+  const continueStory = () => {
+    if (activeStory === null || storyChoice === null) return;
+    if (activeStory.id === "E41") {
+      const narrativeEnding = evaluateNarrativeEnding(gameState, selectedFactionId, arcState, lampState, storyProgress);
+      setActiveStory(null);
+      setStoryChoice(null);
+      setEnding(narrativeEnding);
+      return;
+    }
+
+    setActiveStory(null);
+    setStoryChoice(null);
+  };
+
+  const continueSettlement = () => {
+    if (settlement === null) return;
+    setSettlement(null);
+    setStoryProgress((current) => ({ ...current, chapterIndex: current.chapterIndex + 1 }));
+    setLampState((current) => beginLampChapter(current));
+    setLampOpen(true);
   };
 
   return (
@@ -354,13 +378,14 @@ export function GameDashboard({
         />
       ) : null}
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
+      {settlement === null ? null : <ChapterSettlementDialog settlement={settlement} onContinue={continueSettlement} />}
       {activeStory === null ? null : (
         <StoryDialog
           event={activeStory}
           perspective={getStoryPerspective(activeStory, selectedFactionId)}
           selectedChoice={storyChoice}
           onChoose={chooseStory}
-          onContinue={() => { setActiveStory(null); setStoryChoice(null); }}
+          onContinue={continueStory}
         />
       )}
       {ending === null ? null : (
