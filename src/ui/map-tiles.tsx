@@ -3,6 +3,7 @@ import { Activity, Cpu, Database, MapPinned, ShieldCheck } from "lucide-react";
 import type { FactionId } from "@/core/models/ids";
 import type { Tile } from "@/core/models/tile";
 import { getMapSummary } from "./map-summary";
+import { WorldRegionMap } from "./world-region-map";
 import "./map-tiles.css";
 
 type TileController = FactionId | "commons" | "none";
@@ -97,31 +98,11 @@ export function MapTiles({ tiles }: { tiles: readonly Tile[] }) {
       <MapSummary tiles={tiles} />
 
       <div className="map-layout">
-        <div className="tile-grid" role="grid" aria-label="世界地块">
-          {tiles.map((tile, index) => {
-            const controller = tile.controllingFaction;
-            const isSelected = tile.id === selectedTile.id;
-            return (
-              <button
-                className={`map-tile ${controllerTone[controller]} ${isSelected ? "map-tile--selected" : ""} ${tile.modelDrift >= 12 ? "map-tile--unstable" : ""}`}
-                type="button"
-                role="gridcell"
-                aria-label={`${tile.name}，${controllerLabel[controller]}，算力 ${tile.computeOutput.toFixed(1)}，数据 ${tile.dataOutput.toFixed(1)}，漂移 ${tile.modelDrift.toFixed(1)}`}
-                aria-selected={isSelected}
-                data-testid={`map-tile-${tile.id}`}
-                key={tile.id}
-                onClick={() => setSelectedTileId(tile.id)}
-              >
-                <span className="map-tile__index">{String(index + 1).padStart(2, "0")}</span>
-                <span className="map-tile__signal" aria-hidden="true" />
-                <span className="map-tile__name">{tile.name}</span>
-                <span className="map-tile__controller">{controllerLabel[controller]}</span>
-                <span className="map-tile__output">C {tile.computeOutput.toFixed(1)} / D {tile.dataOutput.toFixed(1)}</span>
-                <span className="map-tile__drift">δ {tile.modelDrift.toFixed(1)}</span>
-              </button>
-            );
-          })}
-        </div>
+        <WorldRegionMap
+          tiles={tiles}
+          selectedTileId={selectedTile.id}
+          onSelectTile={setSelectedTileId}
+        />
 
         <aside className={`tile-detail ${controllerTone[selectedTile.controllingFaction]}`} aria-live="polite">
           <div className="tile-detail__topline">
@@ -141,6 +122,32 @@ export function MapTiles({ tiles }: { tiles: readonly Tile[] }) {
             <span className="tile-detail__stability-track"><i style={{ width: `${Math.min(100, Math.max(0, selectedTile.stability))}%` }} /></span>
           </div>
         </aside>
+      </div>
+
+      <div className="tile-grid" role="grid" aria-label="生产节点列表">
+        {tiles.map((tile, index) => {
+          const controller = tile.controllingFaction;
+          const isSelected = tile.id === selectedTile.id;
+          return (
+            <button
+              className={`map-tile ${controllerTone[controller]} ${isSelected ? "map-tile--selected" : ""} ${tile.modelDrift >= 12 ? "map-tile--unstable" : ""}`}
+              type="button"
+              role="gridcell"
+              aria-label={`${tile.name}，${controllerLabel[controller]}，算力 ${tile.computeOutput.toFixed(1)}，数据 ${tile.dataOutput.toFixed(1)}，漂移 ${tile.modelDrift.toFixed(1)}`}
+              aria-selected={isSelected}
+              data-testid={`map-tile-${tile.id}`}
+              key={tile.id}
+              onClick={() => setSelectedTileId(tile.id)}
+            >
+              <span className="map-tile__index">{String(index + 1).padStart(2, "0")}</span>
+              <span className="map-tile__signal" aria-hidden="true" />
+              <span className="map-tile__name">{tile.name}</span>
+              <span className="map-tile__controller">{controllerLabel[controller]}</span>
+              <span className="map-tile__output">C {tile.computeOutput.toFixed(1)} / D {tile.dataOutput.toFixed(1)}</span>
+              <span className="map-tile__drift">δ {tile.modelDrift.toFixed(1)}</span>
+            </button>
+          );
+        })}
       </div>
     </section>
   );

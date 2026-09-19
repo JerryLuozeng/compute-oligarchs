@@ -6,6 +6,7 @@ const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
   plugins: [react()],
+  publicDir: "static",
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
   clearScreen: false,
   server: {
