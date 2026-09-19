@@ -94,6 +94,13 @@
 .player-faction__arc-row strong { color: #e5ebe3; font-size: 11px; }
 .player-faction__arc-row::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: rgb(138 146 140 / 0.16); content: ""; }
 .player-faction__arc-row i { position: absolute; bottom: 0; left: 0; z-index: 1; height: 2px; background: currentColor; }
+.player-faction__advisors { display: grid; gap: 10px; margin-top: 20px; border-top: 1px solid var(--dashboard-border); padding-top: 15px; }
+.player-faction__advisors-title { display: flex; align-items: center; gap: 7px; color: #8a928c; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.08em; }
+.player-faction__advisors-title svg { width: 13px; color: #ff9d3b; }
+.player-faction__advisor { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; color: #d6ddd7; font: 600 10px/1.2 "Cascadia Mono", monospace; }
+.player-faction__advisor > span { display: grid; min-width: 0; gap: 4px; }
+.player-faction__advisor small { color: #69736c; font-size: 8px; }
+.player-faction__advisor strong { color: #19e3ff; font-size: 11px; }
 .game-actions { display: grid; gap: 5px; }
 .game-actions > button:first-child { width: 100%; justify-content: space-between; }
 .game-action--story { border-color: rgb(255 157 59 / 0.5); color: #ff9d3b; }

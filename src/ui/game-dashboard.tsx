@@ -8,6 +8,7 @@ import {
   FolderClock,
   Info,
   Lightbulb,
+  MessageSquareQuote,
   Radio,
   ShieldCheck,
   TriangleAlert,
@@ -25,7 +26,13 @@ import {
 } from "@/content/event-runtime";
 import { evaluateEnding, type EndingResult } from "@/content/endings";
 import { getFactionProfile } from "@/content/factions";
-import { createFactionArcState, factionRoutes } from "@/content/faction-routes";
+import { applyFactionArcChange, createFactionArcState, factionRoutes } from "@/content/faction-routes";
+import {
+  applyAdvisorTrust,
+  createAdvisorTrustState,
+  getFactionAdvisors,
+  getStoryPerspective
+} from "@/content/faction-story";
 import {
   advanceStoryChapter,
   createStoryProgress,
@@ -128,14 +135,16 @@ export function GameDashboard({
   const [lampState, setLampState] = useState(createLampTendencyState);
   const [lampOpen, setLampOpen] = useState(() => isTutorialComplete(window.localStorage));
   const [arcState, setArcState] = useState(() => createFactionArcState(initialState, selectedFactionId));
+  const [advisorTrust, setAdvisorTrust] = useState(createAdvisorTrustState);
   const [storyProgress, setStoryProgress] = useState(createStoryProgress);
   const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
   const selectedRoute = factionRoutes[selectedFactionId];
-  const storyComplete = isStoryComplete(storyProgress, lampState);
-  const pendingStory = findNextStoryEvent(storyProgress, lampState);
+  const storyComplete = isStoryComplete(storyProgress, lampState, selectedFactionId);
+  const pendingStory = findNextStoryEvent(storyProgress, lampState, selectedFactionId);
+  const factionAdvisors = getFactionAdvisors(selectedFactionId);
 
   const advanceTurn = () => {
     if (activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0) return;
@@ -167,6 +176,7 @@ export function GameDashboard({
     setEnding(null);
     setLampState(createLampTendencyState());
     setArcState(createFactionArcState(initialGameState, selectedFactionId));
+    setAdvisorTrust(createAdvisorTrustState());
     setStoryProgress(createStoryProgress());
     setActiveStory(null);
     setStoryChoice(null);
@@ -193,7 +203,7 @@ export function GameDashboard({
       return;
     }
 
-    const nextProgress = advanceStoryChapter(storyProgress, lampState);
+    const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId);
     if (nextProgress !== storyProgress) {
       setStoryProgress(nextProgress);
       setLampState((current) => beginLampChapter(current));
@@ -204,6 +214,8 @@ export function GameDashboard({
   const chooseStory = (choice: StoryChoice) => {
     if (activeStory === null || storyChoice !== null) return;
     setStoryProgress((current) => recordStoryChoice(current, activeStory, choice.id));
+    setArcState((current) => applyFactionArcChange(current, choice.arcChange ?? {}));
+    setAdvisorTrust((current) => applyAdvisorTrust(current, choice.advisorId));
     setStoryChoice(choice);
   };
 
@@ -283,6 +295,15 @@ export function GameDashboard({
                 <i style={{ width: `${arcState.liability}%` }} aria-hidden="true" />
               </div>
             </div>
+            <div className="player-faction__advisors" aria-label="顾问信任">
+              <span className="player-faction__advisors-title"><MessageSquareQuote /> 顾问信任</span>
+              {factionAdvisors.map((advisor) => (
+                <div className="player-faction__advisor" key={advisor.id}>
+                  <span>{advisor.name}<small>{advisor.principle}</small></span>
+                  <strong>{advisorTrust[advisor.id]}</strong>
+                </div>
+              ))}
+            </div>
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">
@@ -291,7 +312,7 @@ export function GameDashboard({
             </Button>
             <button className="game-action game-action--story" type="button" onClick={advanceStory} disabled={activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0 || storyComplete}>
               <BookOpen />{storyComplete ? "剧情已完结" : pendingStory === undefined ? "进入下一章" : "推进剧情"}
-              <span>{storyComplete ? "终" : pendingStory?.id ?? "下一章"}</span>
+              <span>{storyComplete ? "终" : pendingStory?.displayCode ?? pendingStory?.id ?? "下一章"}</span>
             </button>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
             <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
@@ -336,6 +357,7 @@ export function GameDashboard({
       {activeStory === null ? null : (
         <StoryDialog
           event={activeStory}
+          perspective={getStoryPerspective(activeStory, selectedFactionId)}
           selectedChoice={storyChoice}
           onChoose={chooseStory}
           onContinue={() => { setActiveStory(null); setStoryChoice(null); }}

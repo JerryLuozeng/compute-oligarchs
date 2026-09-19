@@ -1,4 +1,8 @@
 import type { LampId, LampTendencyState } from "./lamps";
+import type { FactionId } from "@/core/models/ids";
+import type { FactionArcChange } from "./faction-routes";
+import { getFactionStoryEvents } from "./faction-story";
+import type { AdvisorId } from "./faction-story";
 import { getLampStatus } from "./lamps";
 import sourceEvents from "./story-events.json";
 
@@ -12,10 +16,15 @@ export interface StoryChoice {
   id: string;
   text: string;
   outcome: string;
+  advisorId?: AdvisorId;
+  advisorAdvice?: string;
+  arcChange?: FactionArcChange;
 }
 
 export interface StoryEvent {
   id: string;
+  displayCode?: string;
+  factionId?: FactionId;
   chapter: StoryChapter | "任意";
   title: string;
   description: string;
@@ -75,10 +84,14 @@ export const createStoryProgress = (): StoryProgress => ({
 export const getStoryChapter = (progress: StoryProgress): StoryChapter =>
   storyChapters[progress.chapterIndex] ?? storyChapters[storyChapters.length - 1];
 
-export const isStoryComplete = (progress: StoryProgress, lamps: LampTendencyState): boolean =>
+export const isStoryComplete = (
+  progress: StoryProgress,
+  lamps: LampTendencyState,
+  factionId?: FactionId
+): boolean =>
   progress.chapterIndex === storyChapters.length - 1
   && lamps.chapterAllocationCount > 0
-  && findNextStoryEvent(progress, lamps) === undefined;
+  && findNextStoryEvent(progress, lamps, factionId) === undefined;
 
 const matchesRule = (
   event: StoryEvent,
@@ -103,16 +116,20 @@ const minorQuota = [1, 1, 1, 2, 2, 1] as const;
 
 export const findNextStoryEvent = (
   progress: StoryProgress,
-  lamps: LampTendencyState
+  lamps: LampTendencyState,
+  factionId?: FactionId
 ): StoryEvent | undefined => {
   if (lamps.chapterAllocationCount === 0) return undefined;
 
   const chapter = getStoryChapter(progress);
   const resolved = new Set(progress.resolvedIds);
-  const mainEvents = storyEvents.filter((event) =>
+  const availableEvents = factionId === undefined
+    ? storyEvents
+    : [...storyEvents, ...getFactionStoryEvents(factionId)];
+  const mainEvents = availableEvents.filter((event) =>
     event.chapter === chapter && !resolved.has(event.id) && matchesRule(event, progress, lamps)
   );
-  const chapterMainCount = storyEvents.filter((event) =>
+  const chapterMainCount = availableEvents.filter((event) =>
     event.chapter === chapter && resolved.has(event.id)
   ).length;
   const priorMinorQuota = minorQuota.slice(0, progress.chapterIndex).reduce<number>((sum, count) => sum + count, 0);
@@ -144,11 +161,12 @@ export const recordStoryChoice = (
 
 export const advanceStoryChapter = (
   progress: StoryProgress,
-  lamps: LampTendencyState
+  lamps: LampTendencyState,
+  factionId?: FactionId
 ): StoryProgress => {
   if (progress.chapterIndex >= storyChapters.length - 1
     || lamps.chapterAllocationCount === 0
-    || findNextStoryEvent(progress, lamps) !== undefined) return progress;
+    || findNextStoryEvent(progress, lamps, factionId) !== undefined) return progress;
 
   return { ...progress, chapterIndex: progress.chapterIndex + 1 };
 };

@@ -2,6 +2,13 @@
 .story-dialog .event-dialog__body { min-height: 190px; }
 .story-dialog .event-dialog__options:has(button:nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .story-dialog .event-dialog__options button { min-width: 0; }
+.story-dialog__perspective { margin: 18px 0 0; border-left: 2px solid #19e3ff; padding: 8px 11px; color: #9db7b5; background: rgb(25 227 255 / 0.06); font: 500 10px/1.55 "Cascadia Mono", monospace; }
+.story-dialog__echo { display: flex; align-items: center; gap: 8px; margin: 18px 0 0; color: #b6ff3b; font: 600 10px/1.5 "Cascadia Mono", monospace; }
+.story-dialog__echo svg { width: 14px; flex: 0 0 auto; }
+.story-dialog .event-dialog__options button small { display: flex; align-items: flex-start; gap: 7px; margin-top: 10px; color: #9db7b5; font: 500 9px/1.5 "Cascadia Mono", monospace; text-align: left; }
+.story-dialog .event-dialog__options button small svg { width: 13px; height: 13px; margin-top: 1px; flex: 0 0 auto; color: #19e3ff; }
+.story-dialog .event-dialog__options button small span { grid-column: auto; color: inherit; font: inherit; letter-spacing: 0; }
+.story-dialog .event-dialog__options button > svg:last-child { align-self: end; }
 .story-dialog__continue { display: flex; justify-content: flex-end; border-top: 1px solid rgb(138 146 140 / 0.25); padding: 17px 22px; }
 .story-dialog__continue button { display: flex; min-height: 42px; align-items: center; gap: 10px; border: 1px solid var(--event-accent); padding: 0 18px; color: #0d110e; background: var(--event-accent); cursor: pointer; font: 700 12px/1 "Bahnschrift", sans-serif; }
 .story-dialog__continue button:hover, .story-dialog__continue button:focus-visible { outline: 2px solid #19e3ff; outline-offset: 2px; }

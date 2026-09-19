@@ -86,4 +86,23 @@ describe("story events", () => {
     expect(progress.resolvedIds.filter((id) => id.startsWith("M"))).toHaveLength(8);
     expect(new Set(progress.resolvedIds).size).toBe(progress.resolvedIds.length);
   });
+
+  it("schedules only the selected faction route and completes all three route events", () => {
+    let progress = createStoryProgress();
+    let lamps = balanced();
+
+    for (let step = 0; step < 80 && !isStoryComplete(progress, lamps, "independent_labs"); step += 1) {
+      const event = findNextStoryEvent(progress, lamps, "independent_labs");
+      if (event !== undefined) {
+        progress = recordStoryChoice(progress, event, "A");
+      } else {
+        progress = advanceStoryChapter(progress, lamps, "independent_labs");
+        lamps = recordLampAllocation(beginLampChapter(lamps), lamps.current);
+      }
+    }
+
+    expect(progress.resolvedIds).toEqual(expect.arrayContaining(["PRISM-P1", "PRISM-P2", "PRISM-P3"]));
+    expect(progress.resolvedIds.some((id) => id.startsWith("CONSORTIUM-"))).toBe(false);
+    expect(isStoryComplete(progress, lamps, "independent_labs")).toBe(true);
+  });
 });

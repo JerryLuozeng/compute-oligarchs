@@ -1,16 +1,19 @@
 import { useEffect, useRef } from "react";
-import { ArrowRight, BookOpen, RadioTower } from "lucide-react";
+import { ArrowRight, BookOpen, MessageSquareQuote, RadioTower } from "lucide-react";
 import type { StoryChoice, StoryEvent } from "@/content/story-events";
+import { getAdvisor } from "@/content/faction-story";
 import "./event-dialog.css";
 import "./story-dialog.css";
 
 export function StoryDialog({
   event,
+  perspective,
   selectedChoice,
   onChoose,
   onContinue
 }: {
   event: StoryEvent;
+  perspective: string;
   selectedChoice: StoryChoice | null;
   onChoose: (choice: StoryChoice) => void;
   onContinue: () => void;
@@ -47,7 +50,7 @@ export function StoryDialog({
       >
         <div className="event-dialog__noise" aria-hidden="true" />
         <header className="event-dialog__header">
-          <span><RadioTower /> STORY SIGNAL / {event.id}</span>
+          <span><RadioTower /> STORY SIGNAL / {event.displayCode ?? event.id}</span>
           <span className="event-dialog__theme"><i />{event.chapter}</span>
         </header>
         <div className="event-dialog__body">
@@ -56,6 +59,12 @@ export function StoryDialog({
           <p id="story-dialog-description" className="event-dialog__description">
             {selectedChoice?.outcome ?? event.description}
           </p>
+          {selectedChoice === null ? <p className="story-dialog__perspective">{perspective}</p> : null}
+          {selectedChoice?.advisorId === undefined ? null : (
+            <p className="story-dialog__echo">
+              <MessageSquareQuote /> {getAdvisor(selectedChoice.advisorId).name}会记住你的选择。
+            </p>
+          )}
         </div>
         {selectedChoice === null ? (
           <div className="event-dialog__options" aria-label="剧情决策">
@@ -63,6 +72,12 @@ export function StoryDialog({
               <button type="button" key={choice.id} onClick={() => onChoose(choice)}>
                 <span>OPTION {choice.id}</span>
                 <strong>{choice.text}</strong>
+                {choice.advisorId === undefined || choice.advisorAdvice === undefined ? null : (
+                  <small>
+                    <MessageSquareQuote />
+                    <span>{getAdvisor(choice.advisorId).name}：{choice.advisorAdvice}</span>
+                  </small>
+                )}
                 <ArrowRight />
               </button>
             ))}
