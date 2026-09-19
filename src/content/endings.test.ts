@@ -55,7 +55,10 @@ describe("evaluateNarrativeEnding", () => {
   });
 
   it("returns the shared hidden ending for a cooperative final choice", () => {
-    const progress = { ...createStoryProgress(), choices: { E41: "A" } };
+    const progress = {
+      ...createStoryProgress(),
+      choices: { E02: "A", E13: "A", E17: "A", E41: "A" }
+    };
     const result = evaluateNarrativeEnding(
       initialGameState,
       "consortium",
@@ -103,5 +106,13 @@ describe("evaluateNarrativeEnding", () => {
 
     expect(compromised.kind).toBe("route-compromise");
     expect(stable.kind).toBe("route-success");
+    expect(stable.copy.title).toBe("穹顶合拢");
+    expect(evaluateNarrativeEnding(
+      initialGameState,
+      "labor_union",
+      { factionId: "labor_union", lifeline: 80, liability: 10 },
+      balancedLamps,
+      progress
+    ).copy.title).toBe("星火不熄");
   });
 });

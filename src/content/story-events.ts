@@ -121,6 +121,7 @@ const matchesRule = (
 };
 
 const minorQuota = [1, 1, 1, 2, 2, 1] as const;
+const mainQuota = [2, 7, 7, 8, 8, 2] as const;
 
 export const findNextStoryEvent = (
   progress: StoryProgress,
@@ -155,7 +156,9 @@ export const findNextStoryEvent = (
   if (pendingReactive !== undefined && (chapterMainCount >= 2 || mainEvents.length === 0)) {
     return pendingReactive;
   }
-  return mainEvents[0];
+  if (chapterMainCount >= mainQuota[progress.chapterIndex]) return undefined;
+  const pendingFactionEvent = mainEvents.find((event) => event.factionId === factionId);
+  return chapterMainCount > 0 && pendingFactionEvent !== undefined ? pendingFactionEvent : mainEvents[0];
 };
 
 export const recordStoryChoice = (
