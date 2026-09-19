@@ -2,6 +2,11 @@ import type { Faction } from "@/core/models/faction";
 import type { GameState } from "@/core/models/game-state";
 import type { CollectionMode, FactionId, TileId } from "@/core/models/ids";
 import type { Tile } from "@/core/models/tile";
+import {
+  createStrategicActionState,
+  isStrategicActionState,
+  type StrategicActionState
+} from "@/core/systems/strategic-actions";
 import { createFactionArcState, type FactionArcState } from "@/content/faction-routes";
 import { advisors, createAdvisorTrustState, type AdvisorTrustState } from "@/content/faction-story";
 import { createLampTendencyState, isValidLampAllocation, type LampTendencyState } from "@/content/lamps";
@@ -22,11 +27,12 @@ export interface GameSession {
   advisorTrust: AdvisorTrustState;
   storyProgress: StoryProgress;
   policyLegacyState: PolicyLegacyState;
+  strategicActionState: StrategicActionState;
   resolvedEventIds: readonly string[];
 }
 
 export interface SavedGame {
-  version: 3;
+  version: 4;
   savedAt: string;
   selectedFactionId: FactionId;
   session: GameSession;
@@ -124,16 +130,21 @@ const isStoryProgress = (value: unknown): value is StoryProgress =>
   && Array.isArray(value.reactiveChapterIndexes)
   && value.reactiveChapterIndexes.every((index) => Number.isInteger(index));
 
-type LegacyGameSession = Omit<GameSession, "policyLegacyState">;
+type VersionTwoGameSession = Omit<GameSession, "policyLegacyState" | "strategicActionState">;
+type VersionThreeGameSession = Omit<GameSession, "strategicActionState">;
 
-const isLegacySession = (value: unknown, factionId: FactionId): value is LegacyGameSession =>
+const isVersionTwoSession = (value: unknown, factionId: FactionId): value is VersionTwoGameSession =>
   isRecord(value) && isGameState(value.gameState) && isLampState(value.lampState)
   && isArcState(value.arcState, factionId) && isAdvisorTrust(value.advisorTrust)
   && isStoryProgress(value.storyProgress) && isStringArray(value.resolvedEventIds);
 
-const isSession = (value: unknown, factionId: FactionId): value is GameSession =>
-  isLegacySession(value, factionId)
+const isVersionThreeSession = (value: unknown, factionId: FactionId): value is VersionThreeGameSession =>
+  isVersionTwoSession(value, factionId)
   && isPolicyLegacyState((value as unknown as Record<string, unknown>).policyLegacyState);
+
+const isSession = (value: unknown, factionId: FactionId): value is GameSession =>
+  isVersionThreeSession(value, factionId)
+  && isStrategicActionState((value as unknown as Record<string, unknown>).strategicActionState);
 
 export const createGameSession = (gameState: GameState, factionId: FactionId): GameSession => ({
   gameState,
@@ -142,6 +153,7 @@ export const createGameSession = (gameState: GameState, factionId: FactionId): G
   advisorTrust: createAdvisorTrustState(),
   storyProgress: createStoryProgress(),
   policyLegacyState: createPolicyLegacyState(),
+  strategicActionState: createStrategicActionState(),
   resolvedEventIds: []
 });
 
@@ -151,20 +163,32 @@ const parseSavedGame = (value: string): SavedGame | null => {
     if (!isRecord(candidate) || typeof candidate.savedAt !== "string"
       || Number.isNaN(Date.parse(candidate.savedAt)) || !isFactionId(candidate.selectedFactionId)) return null;
 
-    if (candidate.version === 3 && isSession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 4 && isSession(candidate.session, candidate.selectedFactionId)) {
       return candidate as unknown as SavedGame;
     }
-    if (candidate.version === 2 && isLegacySession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 3 && isVersionThreeSession(candidate.session, candidate.selectedFactionId)) {
       return {
-        version: 3,
+        version: 4,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
-        session: { ...candidate.session, policyLegacyState: createPolicyLegacyState() }
+        session: { ...candidate.session, strategicActionState: createStrategicActionState() }
+      };
+    }
+    if (candidate.version === 2 && isVersionTwoSession(candidate.session, candidate.selectedFactionId)) {
+      return {
+        version: 4,
+        savedAt: candidate.savedAt,
+        selectedFactionId: candidate.selectedFactionId,
+        session: {
+          ...candidate.session,
+          policyLegacyState: createPolicyLegacyState(),
+          strategicActionState: createStrategicActionState()
+        }
       };
     }
     if (candidate.version === 1 && isGameState(candidate.gameState)) {
       return {
-        version: 3,
+        version: 4,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: createGameSession(candidate.gameState, candidate.selectedFactionId)
@@ -198,7 +222,7 @@ export const writeSaveSlot = (
 ): SavedGame | null => {
   if (!Number.isInteger(index) || index < 1 || index > SAVE_SLOT_COUNT) return null;
   const savedGame: SavedGame = {
-    version: 3,
+    version: 4,
     savedAt: now().toISOString(),
     selectedFactionId,
     session

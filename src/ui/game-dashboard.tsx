@@ -3,6 +3,7 @@ import {
   Activity,
   BookOpen,
   ChevronRight,
+  Crosshair,
   Cpu,
   Database,
   FolderClock,
@@ -20,6 +21,12 @@ import type { Faction } from "@/core/models/faction";
 import type { GameState } from "@/core/models/game-state";
 import type { FactionId } from "@/core/models/ids";
 import { tick } from "@/core/systems/tick";
+import {
+  beginStrategicActionPhase,
+  executeStrategicAction,
+  finishStrategicActionPhase,
+  type StrategicAction
+} from "@/core/systems/strategic-actions";
 import {
   findTriggeredEvent,
   type RuntimeGameEvent,
@@ -48,6 +55,7 @@ import {
   getPolicyChoiceNotice,
   getPolicyLegacyEcho
 } from "@/content/policy-legacies";
+import { strategicActionFeedback } from "@/content/strategic-actions";
 import {
   beginLampChapter,
   recordLampAllocation,
@@ -68,6 +76,7 @@ import {
   type SaveSlot
 } from "./save-slots";
 import { StoryDialog } from "./story-dialog";
+import { StrategicActionsDialog } from "./strategic-actions-dialog";
 import { getTimeCoordinate } from "./time-flow";
 import { TutorialOverlay } from "./tutorial-overlay";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
@@ -159,6 +168,11 @@ export function GameDashboard({
   const [advisorTrust, setAdvisorTrust] = useState(startingSession.advisorTrust);
   const [storyProgress, setStoryProgress] = useState(startingSession.storyProgress);
   const [policyLegacyState, setPolicyLegacyState] = useState(startingSession.policyLegacyState);
+  const [strategicActionState, setStrategicActionState] = useState(startingSession.strategicActionState);
+  const [strategicActionsOpen, setStrategicActionsOpen] = useState(
+    startingSession.strategicActionState.status === "active"
+  );
+  const [strategicActionStatus, setStrategicActionStatus] = useState("");
   const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
   const [settlement, setSettlement] = useState<ChapterSettlement | null>(null);
@@ -176,14 +190,28 @@ export function GameDashboard({
     || activeStory !== null
     || ending !== null
     || settlement !== null
+    || strategicActionState.status === "active"
     || lampState.chapterAllocationCount === 0;
+
+  const queueChapterSettlement = (state: GameState) => {
+    if (!isStoryComplete(storyProgress, lampState, selectedFactionId, state)
+      && findNextStoryEvent(storyProgress, lampState, selectedFactionId, state) === undefined) {
+      setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
+    }
+  };
 
   const resolveTimeConsequences = (state: GameState) => {
     const nextEnding = evaluateEnding(state, selectedFactionId);
+    const nextEvent = nextEnding === null ? findTriggeredEvent(state, resolvedEventIds) ?? null : null;
     setEnding(nextEnding);
-    setActiveEvent(nextEnding === null
-      ? findTriggeredEvent(state, resolvedEventIds) ?? null
-      : null);
+    setActiveEvent(nextEvent);
+    if (nextEnding === null && nextEvent === null) queueChapterSettlement(state);
+  };
+
+  const beginActions = (turn: number) => {
+    setStrategicActionState((current) => beginStrategicActionPhase(current, turn));
+    setStrategicActionStatus("本季度有 3 个行动点。选择行动，或主动结束行动阶段。");
+    setStrategicActionsOpen(true);
   };
 
   const advanceTime = () => {
@@ -206,7 +234,7 @@ export function GameDashboard({
       return;
     }
 
-    resolveTimeConsequences(nextState);
+    beginActions(nextState.turn);
   };
 
   const resolveEvent = (option: RuntimeGameEventOption) => {
@@ -216,7 +244,9 @@ export function GameDashboard({
     setGameState(nextState);
     setResolvedEventIds((currentIds) => new Set(currentIds).add(activeEvent.id));
     setActiveEvent(null);
-    setEnding(evaluateEnding(nextState, selectedFactionId));
+    const nextEnding = evaluateEnding(nextState, selectedFactionId);
+    setEnding(nextEnding);
+    if (nextEnding === null) queueChapterSettlement(nextState);
   };
 
   const restartGame = () => {
@@ -230,6 +260,9 @@ export function GameDashboard({
     setAdvisorTrust(freshSession.advisorTrust);
     setStoryProgress(freshSession.storyProgress);
     setPolicyLegacyState(freshSession.policyLegacyState);
+    setStrategicActionState(freshSession.strategicActionState);
+    setStrategicActionsOpen(false);
+    setStrategicActionStatus("");
     setActiveStory(null);
     setStoryChoice(null);
     setSettlement(null);
@@ -246,6 +279,7 @@ export function GameDashboard({
     advisorTrust,
     storyProgress,
     policyLegacyState,
+    strategicActionState,
     resolvedEventIds: [...resolvedEventIds]
   });
 
@@ -302,19 +336,31 @@ export function GameDashboard({
       setEnding(nextEnding);
       return;
     }
+    beginActions(gameState.turn);
+  };
 
-    const nextEvent = findTriggeredEvent(gameState, resolvedEventIds) ?? null;
-    if (nextEvent !== null) {
-      setActiveEvent(nextEvent);
+  const executeAction = (action: StrategicAction) => {
+    const result = executeStrategicAction(gameState, strategicActionState, selectedFactionId, action);
+    if (result.error !== undefined) {
+      const errors = {
+        "phase-inactive": "行动阶段已经结束。",
+        "insufficient-points": "剩余行动点不足。",
+        "invalid-target": "当前目标不适用于这项行动。",
+        "insufficient-resources": "当前资源不足，无法承担这项行动。"
+      } as const;
+      setStrategicActionStatus(errors[result.error]);
       return;
     }
+    setGameState(result.gameState);
+    setStrategicActionState(result.actionState);
+    setStrategicActionStatus(strategicActionFeedback[action.type]);
+  };
 
-    if (findNextStoryEvent(storyProgress, lampState, selectedFactionId, gameState) === undefined) {
-      const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId, gameState);
-      if (nextProgress !== storyProgress) {
-        setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
-      }
-    }
+  const finishActions = () => {
+    setStrategicActionState((current) => finishStrategicActionPhase(current));
+    setStrategicActionsOpen(false);
+    setStrategicActionStatus("");
+    resolveTimeConsequences(gameState);
   };
 
   const continueSettlement = () => {
@@ -422,6 +468,15 @@ export function GameDashboard({
               <strong>{storyComplete ? "∞" : pendingStory?.displayCode ?? pendingStory?.id ?? "章末"}</strong>
             </div>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
+            <button
+              className="game-action"
+              type="button"
+              disabled={strategicActionState.status !== "active"}
+              onClick={() => setStrategicActionsOpen(true)}
+            >
+              <Crosshair />主动行动
+              <span>{strategicActionState.status === "active" ? `${strategicActionState.pointsRemaining} AP` : "待剧情"}</span>
+            </button>
             <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
             <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
             <button className="game-action" type="button" onClick={openSaveDialog}><FolderClock />保存进度<span>六档</span></button>
@@ -462,6 +517,17 @@ export function GameDashboard({
         />
       ) : null}
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
+      {!strategicActionsOpen || strategicActionState.status !== "active" ? null : (
+        <StrategicActionsDialog
+          gameState={gameState}
+          playerFactionId={selectedFactionId}
+          actionState={strategicActionState}
+          feedback={strategicActionStatus}
+          onExecute={executeAction}
+          onFinish={finishActions}
+          onClose={() => setStrategicActionsOpen(false)}
+        />
+      )}
       {saveSlots === null ? null : (
         <SaveGameDialog
           slots={saveSlots}

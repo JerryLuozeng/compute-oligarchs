@@ -29,7 +29,7 @@ describe("readSaveSlots", () => {
     expect(slots[0]?.status).toBe("empty");
     expect(slots[1]?.status).toBe("ready");
     expect(slots[1]?.savedGame?.selectedFactionId).toBe("labor_union");
-    expect(slots[1]?.savedGame?.version).toBe(3);
+    expect(slots[1]?.savedGame?.version).toBe(4);
     expect(slots[1]?.savedGame?.session.gameState.turn).toBe(initialGameState.turn);
     expect(slots[1]?.savedGame?.session.storyProgress.chapterIndex).toBe(0);
   });
@@ -53,7 +53,7 @@ describe("readSaveSlots", () => {
     expect(slots.every((slot) => slot.status === "empty")).toBe(true);
   });
 
-  it("writes and restores a complete version three session", () => {
+  it("writes and restores a complete version four session", () => {
     const entries: Record<string, string> = {};
     const session = createGameSession(initialGameState, "consortium");
     const saved = writeSaveSlot(
@@ -79,6 +79,12 @@ describe("readSaveSlots", () => {
           "A",
           2
         ),
+        strategicActionState: {
+          ...session.strategicActionState,
+          turn: 2,
+          status: "active",
+          pointsRemaining: 2
+        },
         resolvedEventIds: ["data-strike"]
       },
       () => new Date("2026-09-20T08:00:00.000Z")
@@ -93,6 +99,11 @@ describe("readSaveSlots", () => {
     expect(restored?.session.policyLegacyState.records[0]).toMatchObject({
       id: "consortium-deadline-first",
       status: "active"
+    });
+    expect(restored?.session.strategicActionState).toMatchObject({
+      turn: 2,
+      status: "active",
+      pointsRemaining: 2
     });
   });
 
@@ -116,8 +127,34 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(3);
+    expect(slots[0]?.savedGame?.version).toBe(4);
     expect(slots[0]?.savedGame?.session.policyLegacyState.records).toEqual([]);
+    expect(slots[0]?.savedGame?.session.strategicActionState.status).toBe("complete");
+  });
+
+  it("migrates version three sessions with an empty action history", () => {
+    const session = createGameSession(initialGameState, "labor_union");
+    const versionThreeSession = {
+      gameState: session.gameState,
+      lampState: session.lampState,
+      arcState: session.arcState,
+      advisorTrust: session.advisorTrust,
+      storyProgress: session.storyProgress,
+      policyLegacyState: session.policyLegacyState,
+      resolvedEventIds: session.resolvedEventIds
+    };
+    const slots = readSaveSlots(createStorage({
+      [`${SAVE_STORAGE_PREFIX}1`]: JSON.stringify({
+        version: 3,
+        savedAt: "2026-09-20T08:00:00.000Z",
+        selectedFactionId: "labor_union",
+        session: versionThreeSession
+      })
+    }));
+
+    expect(slots[0]?.status).toBe("ready");
+    expect(slots[0]?.savedGame?.version).toBe(4);
+    expect(slots[0]?.savedGame?.session.strategicActionState.history).toEqual([]);
   });
 
   it("rejects invalid slot indexes and handles write failures", () => {
