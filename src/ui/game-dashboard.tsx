@@ -22,8 +22,10 @@ import {
   type RuntimeGameEvent,
   type RuntimeGameEventOption
 } from "@/content/event-runtime";
+import { evaluateEnding, type EndingResult } from "@/content/endings";
 import { getFactionProfile } from "@/content/factions";
 import { Button } from "./button";
+import { EndingDialog } from "./ending-dialog";
 import { EventDialog } from "./event-dialog";
 import { MapTiles } from "./map-tiles";
 import "./game-dashboard.css";
@@ -85,30 +87,50 @@ function FactionCard({ faction, index }: { faction: Faction; index: number }) {
 
 export function GameDashboard({
   selectedFactionId,
-  onChangeFaction
+  onChangeFaction,
+  onReturnToMenu
 }: {
   selectedFactionId: FactionId;
   onChangeFaction: () => void;
+  onReturnToMenu: () => void;
 }) {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [glitchEnabled, setGlitchEnabled] = useState(true);
   const [activeEvent, setActiveEvent] = useState<RuntimeGameEvent | null>(null);
   const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [ending, setEnding] = useState<EndingResult | null>(null);
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
 
   const advanceTurn = () => {
+    if (activeEvent !== null || ending !== null) return;
+
     const nextState = tick(gameState);
+    const nextEnding = evaluateEnding(nextState, selectedFactionId);
+    const nextEvent = nextEnding === null
+      ? findTriggeredEvent(nextState, resolvedEventIds) ?? null
+      : null;
     setGameState(nextState);
-    setActiveEvent(findTriggeredEvent(nextState, resolvedEventIds) ?? null);
+    setActiveEvent(nextEvent);
+    setEnding(nextEnding);
   };
 
   const resolveEvent = (option: RuntimeGameEventOption) => {
     if (activeEvent === null) return;
 
-    setGameState((currentState) => option.effect(currentState));
+    const nextState = option.effect(gameState);
+    setGameState(nextState);
     setResolvedEventIds((currentIds) => new Set(currentIds).add(activeEvent.id));
     setActiveEvent(null);
+    setEnding(evaluateEnding(nextState, selectedFactionId));
+  };
+
+  const restartGame = () => {
+    setGameState(initialGameState);
+    setActiveEvent(null);
+    setResolvedEventIds(new Set());
+    setEnding(null);
+    window.scrollTo({ top: 0, left: 0 });
   };
 
   return (
@@ -175,7 +197,7 @@ export function GameDashboard({
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">
-            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null} data-testid="next-turn-button">
+            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || ending !== null} data-testid="next-turn-button">
               下一回合 <ChevronRight />
             </Button>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
@@ -208,6 +230,9 @@ export function GameDashboard({
       </footer>
 
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
+      {ending === null ? null : (
+        <EndingDialog ending={ending} onReturnToMenu={onReturnToMenu} onRestart={restartGame} />
+      )}
     </main>
   );
 }
