@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { initialGameState } from "@/core/models/initial-state";
 import { beginLampChapter, createLampTendencyState, recordLampAllocation } from "./lamps";
 import {
   advanceStoryChapter,
@@ -56,7 +57,8 @@ describe("story events", () => {
     const afterPrologue = {
       chapterIndex: 0,
       resolvedIds: ["P1", "M01"],
-      choices: { P1: "A", M01: "B" }
+      choices: { P1: "A", M01: "B" },
+      reactiveChapterIndexes: []
     };
     const firstChapter = advanceStoryChapter(afterPrologue, lamps);
     expect(getStoryChapter(firstChapter)).toBe("第一章");
@@ -104,5 +106,25 @@ describe("story events", () => {
     expect(progress.resolvedIds).toEqual(expect.arrayContaining(["PRISM-P1", "PRISM-P2", "PRISM-P3"]));
     expect(progress.resolvedIds.some((id) => id.startsWith("CONSORTIUM-"))).toBe(false);
     expect(isStoryComplete(progress, lamps, "independent_labs")).toBe(true);
+  });
+
+  it("inserts at most one reactive event after chapter story has established context", () => {
+    const favored = recordLampAllocation(createLampTendencyState(), {
+      industry: 30, order: 20, workshop: 20, commons: 15, livelihood: 15
+    });
+    let progress = createStoryProgress();
+
+    const opening = findNextStoryEvent(progress, favored, "consortium", initialGameState)!;
+    progress = recordStoryChoice(progress, opening, "A");
+    expect(findNextStoryEvent(progress, favored, "consortium", initialGameState)?.reactiveType).toBeUndefined();
+
+    const minor = findNextStoryEvent(progress, favored, "consortium", initialGameState)!;
+    progress = recordStoryChoice(progress, minor, "A");
+    const reactive = findNextStoryEvent(progress, favored, "consortium", initialGameState)!;
+    expect(reactive.id).toBe("RA1");
+
+    progress = recordStoryChoice(progress, reactive, "A");
+    expect(progress.reactiveChapterIndexes).toEqual([0]);
+    expect(findNextStoryEvent(progress, favored, "consortium", initialGameState)?.reactiveType).toBeUndefined();
   });
 });

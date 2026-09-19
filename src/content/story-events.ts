@@ -1,8 +1,10 @@
 import type { LampId, LampTendencyState } from "./lamps";
 import type { FactionId } from "@/core/models/ids";
+import type { GameState } from "@/core/models/game-state";
 import type { FactionArcChange } from "./faction-routes";
 import { getFactionStoryEvents } from "./faction-story";
 import type { AdvisorId } from "./faction-story";
+import { findReactiveStoryEvent } from "./reactive-story";
 import { getLampStatus } from "./lamps";
 import sourceEvents from "./story-events.json";
 
@@ -11,6 +13,7 @@ export const storyChapters = [
 ] as const;
 
 export type StoryChapter = typeof storyChapters[number];
+export type StoryReactiveType = "resonance" | "grievance" | "crisis";
 
 export interface StoryChoice {
   id: string;
@@ -25,6 +28,8 @@ export interface StoryEvent {
   id: string;
   displayCode?: string;
   factionId?: FactionId;
+  reactiveType?: StoryReactiveType;
+  perspective?: string;
   chapter: StoryChapter | "任意";
   title: string;
   description: string;
@@ -35,6 +40,7 @@ export interface StoryProgress {
   chapterIndex: number;
   resolvedIds: readonly string[];
   choices: Readonly<Record<string, string>>;
+  reactiveChapterIndexes: readonly number[];
 }
 
 interface StoryRule {
@@ -78,7 +84,8 @@ export const storyEvents: readonly StoryEvent[] = sourceEvents.map((event) => {
 export const createStoryProgress = (): StoryProgress => ({
   chapterIndex: 0,
   resolvedIds: [],
-  choices: {}
+  choices: {},
+  reactiveChapterIndexes: []
 });
 
 export const getStoryChapter = (progress: StoryProgress): StoryChapter =>
@@ -87,11 +94,12 @@ export const getStoryChapter = (progress: StoryProgress): StoryChapter =>
 export const isStoryComplete = (
   progress: StoryProgress,
   lamps: LampTendencyState,
-  factionId?: FactionId
+  factionId?: FactionId,
+  state?: GameState
 ): boolean =>
   progress.chapterIndex === storyChapters.length - 1
   && lamps.chapterAllocationCount > 0
-  && findNextStoryEvent(progress, lamps, factionId) === undefined;
+  && findNextStoryEvent(progress, lamps, factionId, state) === undefined;
 
 const matchesRule = (
   event: StoryEvent,
@@ -117,7 +125,8 @@ const minorQuota = [1, 1, 1, 2, 2, 1] as const;
 export const findNextStoryEvent = (
   progress: StoryProgress,
   lamps: LampTendencyState,
-  factionId?: FactionId
+  factionId?: FactionId,
+  state?: GameState
 ): StoryEvent | undefined => {
   if (lamps.chapterAllocationCount === 0) return undefined;
 
@@ -136,9 +145,15 @@ export const findNextStoryEvent = (
   const chapterMinorIds = storyEvents.filter((event) => event.chapter === "任意")
     .slice(priorMinorQuota, priorMinorQuota + minorQuota[progress.chapterIndex]);
   const pendingMinor = chapterMinorIds.find((event) => !resolved.has(event.id));
+  const pendingReactive = factionId === undefined || state === undefined
+    ? undefined
+    : findReactiveStoryEvent(progress, lamps, state, factionId);
 
   if (pendingMinor !== undefined && (chapterMainCount >= 2 || mainEvents.length === 0)) {
     return pendingMinor;
+  }
+  if (pendingReactive !== undefined && (chapterMainCount >= 2 || mainEvents.length === 0)) {
+    return pendingReactive;
   }
   return mainEvents[0];
 };
@@ -155,18 +170,22 @@ export const recordStoryChoice = (
   return {
     ...progress,
     resolvedIds: [...progress.resolvedIds, event.id],
-    choices: { ...progress.choices, [event.id]: choiceId }
+    choices: { ...progress.choices, [event.id]: choiceId },
+    reactiveChapterIndexes: event.reactiveType === undefined
+      ? progress.reactiveChapterIndexes
+      : [...progress.reactiveChapterIndexes, progress.chapterIndex]
   };
 };
 
 export const advanceStoryChapter = (
   progress: StoryProgress,
   lamps: LampTendencyState,
-  factionId?: FactionId
+  factionId?: FactionId,
+  state?: GameState
 ): StoryProgress => {
   if (progress.chapterIndex >= storyChapters.length - 1
     || lamps.chapterAllocationCount === 0
-    || findNextStoryEvent(progress, lamps, factionId) !== undefined) return progress;
+    || findNextStoryEvent(progress, lamps, factionId, state) !== undefined) return progress;
 
   return { ...progress, chapterIndex: progress.chapterIndex + 1 };
 };

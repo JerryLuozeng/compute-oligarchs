@@ -73,9 +73,9 @@ const perspectiveByFaction: Readonly<Record<FactionId, string>> = {
 };
 
 export const getStoryPerspective = (event: StoryEvent, factionId: FactionId): string =>
-  event.factionId === factionId
+  event.perspective ?? (event.factionId === factionId
     ? "这是你所在势力的内部抉择。结果将改变本路线的命脉与隐患。"
-    : perspectiveByFaction[factionId];
+    : perspectiveByFaction[factionId]);
 
 const event = (
   id: string,

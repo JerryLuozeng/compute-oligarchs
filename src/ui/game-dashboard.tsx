@@ -142,8 +142,8 @@ export function GameDashboard({
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
   const selectedRoute = factionRoutes[selectedFactionId];
-  const storyComplete = isStoryComplete(storyProgress, lampState, selectedFactionId);
-  const pendingStory = findNextStoryEvent(storyProgress, lampState, selectedFactionId);
+  const storyComplete = isStoryComplete(storyProgress, lampState, selectedFactionId, gameState);
+  const pendingStory = findNextStoryEvent(storyProgress, lampState, selectedFactionId, gameState);
   const factionAdvisors = getFactionAdvisors(selectedFactionId);
 
   const advanceTurn = () => {
@@ -203,7 +203,7 @@ export function GameDashboard({
       return;
     }
 
-    const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId);
+    const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId, gameState);
     if (nextProgress !== storyProgress) {
       setStoryProgress(nextProgress);
       setLampState((current) => beginLampChapter(current));

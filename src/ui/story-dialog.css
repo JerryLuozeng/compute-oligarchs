@@ -1,4 +1,7 @@
 .story-dialog { --event-accent: #ff9d3b; max-height: calc(100vh - 48px); overflow-y: auto; }
+.story-dialog--resonance { --event-accent: #19e3ff; }
+.story-dialog--grievance { --event-accent: #ff9d3b; }
+.story-dialog--crisis { --event-accent: #ff4d2e; }
 .story-dialog .event-dialog__body { min-height: 190px; }
 .story-dialog .event-dialog__options:has(button:nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .story-dialog .event-dialog__options button { min-width: 0; }

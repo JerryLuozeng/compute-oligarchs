@@ -19,6 +19,11 @@ export function StoryDialog({
   onContinue: () => void;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
+  const decisionLabel = event.reactiveType === "resonance"
+    ? "回响"
+    : event.reactiveType === "grievance"
+      ? "怨气"
+      : event.reactiveType === "crisis" ? "资源危机" : "抉择";
 
   useEffect(() => {
     dialogRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
@@ -28,7 +33,7 @@ export function StoryDialog({
     <div className="event-overlay" role="presentation">
       <section
         ref={dialogRef}
-        className="event-dialog story-dialog"
+        className={`event-dialog story-dialog ${event.reactiveType === undefined ? "" : `story-dialog--${event.reactiveType}`}`}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="story-dialog-title"
@@ -54,7 +59,7 @@ export function StoryDialog({
           <span className="event-dialog__theme"><i />{event.chapter}</span>
         </header>
         <div className="event-dialog__body">
-          <p className="event-dialog__eyebrow"><BookOpen /> {selectedChoice === null ? "抉择" : "回响"}</p>
+          <p className="event-dialog__eyebrow"><BookOpen /> {selectedChoice === null ? decisionLabel : "后果"}</p>
           <h2 id="story-dialog-title" data-text={event.title}>{event.title}</h2>
           <p id="story-dialog-description" className="event-dialog__description">
             {selectedChoice?.outcome ?? event.description}
