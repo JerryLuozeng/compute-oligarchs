@@ -67,6 +67,7 @@ function ResourceLine({
 
 function FactionCard({ faction, index }: { faction: Faction; index: number }) {
   const tone = factionTone[faction.id];
+  const displayName = getFactionProfile(faction.id).name;
 
   return (
     <article className={`faction-card ${tone}`} data-testid="faction-card">
@@ -75,7 +76,7 @@ function FactionCard({ faction, index }: { faction: Faction; index: number }) {
         <span className="faction-card__signal" aria-hidden="true" />
         <span className="faction-card__id">{faction.id.replaceAll("_", " ")}</span>
       </header>
-      <h2>{faction.name}</h2>
+      <h2>{displayName}</h2>
       <div className="faction-card__resources">
         <ResourceLine icon={<Cpu />} label="算力" value={faction.resources.compute} tone="tone-compute" />
         <ResourceLine icon={<Database />} label="数据" value={faction.resources.data} tone="tone-data" />
