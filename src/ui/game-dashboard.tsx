@@ -1,22 +1,26 @@
 import { useState, type ReactNode } from "react";
 import {
   Activity,
+  BookOpen,
   ChevronRight,
   Cpu,
   Database,
+  FolderClock,
+  Info,
   Radio,
   ShieldCheck,
-  TriangleAlert
+  TriangleAlert,
+  Users
 } from "lucide-react";
 import { initialGameState } from "@/core/models/initial-state";
 import type { Faction } from "@/core/models/faction";
 import type { GameState } from "@/core/models/game-state";
+import type { FactionId } from "@/core/models/ids";
 import { tick } from "@/core/systems/tick";
+import { getFactionProfile } from "@/content/factions";
 import { Button } from "./button";
 import { MapTiles } from "./map-tiles";
 import "./game-dashboard.css";
-
-const visibleFactionCount = 4;
 
 const factionTone: Record<Faction["id"], string> = {
   consortium: "faction-card--lime",
@@ -73,10 +77,17 @@ function FactionCard({ faction, index }: { faction: Faction; index: number }) {
   );
 }
 
-export function GameDashboard() {
+export function GameDashboard({
+  selectedFactionId,
+  onChangeFaction
+}: {
+  selectedFactionId: FactionId;
+  onChangeFaction: () => void;
+}) {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [glitchEnabled, setGlitchEnabled] = useState(true);
-  const visibleFactions = gameState.factions.slice(0, visibleFactionCount);
+  const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
+  const selectedProfile = getFactionProfile(selectedFactionId);
 
   const advanceTurn = () => {
     setGameState((currentState) => tick(currentState));
@@ -97,7 +108,7 @@ export function GameDashboard() {
         </div>
         <div className="header-status">
           <span className="status-dot" aria-hidden="true" />
-          <span>观察者模式</span>
+          <span>{selectedProfile.name} / 在线</span>
           <span className="header-divider" aria-hidden="true" />
           <button
             className="glitch-switch"
@@ -110,13 +121,13 @@ export function GameDashboard() {
         </div>
       </header>
 
-      <section className="dashboard-intro">
+      <section className="dashboard-intro dashboard-intro--compact">
         <div>
           <p className="eyebrow eyebrow--alert"><Activity /> QUARTERLY STATE REPORT</p>
           <p className="turn-display" data-testid="turn-number">
             <span>回合</span> {String(gameState.turn).padStart(2, "0")}
           </p>
-          <h2 className="dashboard-title glitch-target">生产资料是主角</h2>
+          <h2 className="dashboard-title glitch-target">生产资料争夺战</h2>
           <p className="dashboard-subtitle">算力是社会化生产资料，数据是数字劳动的凝结。</p>
         </div>
         <div className="global-readout">
@@ -129,19 +140,53 @@ export function GameDashboard() {
         </div>
       </section>
 
-      <section className="faction-grid" aria-label="势力资源">
-        {visibleFactions.map((faction, index) => (
-          <FactionCard faction={faction} index={index} key={faction.id} />
-        ))}
+      <section className="game-workspace" aria-label="主游戏工作区">
+        <aside className="game-sidebar">
+          <div className="player-faction">
+            <p className="game-sidebar__label">CURRENT FACTION</p>
+            <span className={`player-faction__code player-faction__code--${selectedProfile.tone}`}>{selectedProfile.code}</span>
+            <h2>{selectedProfile.name}</h2>
+            <p>{selectedProfile.mandate}</p>
+            {selectedFaction === undefined ? null : (
+              <div className="player-faction__resources">
+                <span><Cpu />算力 <strong>{selectedFaction.resources.compute.toFixed(1)}</strong></span>
+                <span><Database />数据 <strong>{selectedFaction.resources.data.toFixed(1)}</strong></span>
+                <span><ShieldCheck />稳定 <strong>{selectedFaction.resources.stability.toFixed(1)}</strong></span>
+              </div>
+            )}
+          </div>
+
+          <nav className="game-actions" aria-label="游戏操作">
+            <Button type="button" size="lg" onClick={advanceTurn} data-testid="next-turn-button">
+              下一回合 <ChevronRight />
+            </Button>
+            <button className="game-action game-action--active" type="button"><Info />态势总览</button>
+            <button className="game-action" type="button" disabled title="后续版本开放"><BookOpen />新手引导<span>待开放</span></button>
+            <button className="game-action" type="button" disabled title="后续版本开放"><FolderClock />保存进度<span>待开放</span></button>
+            <button className="game-action" type="button" onClick={onChangeFaction}><Users />更换势力</button>
+          </nav>
+        </aside>
+
+        <div className="game-map-stage">
+          <MapTiles tiles={gameState.tiles} />
+        </div>
       </section>
 
-      <MapTiles tiles={gameState.tiles} />
+      <section className="faction-roster">
+        <div className="faction-roster__heading">
+          <p className="eyebrow">FACTION RESOURCE MONITOR</p>
+          <h2>全势力资源态势</h2>
+        </div>
+        <div className="faction-grid" aria-label="势力资源">
+          {gameState.factions.map((faction, index) => (
+            <FactionCard faction={faction} index={index} key={faction.id} />
+          ))}
+        </div>
+      </section>
 
       <footer className="dashboard-footer">
         <p><span className="footer-pulse" aria-hidden="true" /> 数据持续消耗。世界持续变化。</p>
-        <Button type="button" size="lg" onClick={advanceTurn} data-testid="next-turn-button">
-          下一回合 <ChevronRight />
-        </Button>
+        <span>回合 {String(gameState.turn).padStart(2, "0")} / 模拟持续运行</span>
       </footer>
     </main>
   );

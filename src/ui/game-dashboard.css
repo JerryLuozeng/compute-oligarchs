@@ -31,6 +31,8 @@
 .dashboard-header,
 .dashboard-intro,
 .faction-grid,
+.faction-roster,
+.game-workspace,
 .dashboard-footer { position: relative; z-index: 5; width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
 .dashboard-header { display: flex; align-items: center; justify-content: space-between; min-height: 88px; border-bottom: 1px solid var(--dashboard-border); }
 .brand-lockup,
@@ -54,11 +56,12 @@
 .glitch-switch:hover { color: #19e3ff; }
 
 .dashboard-intro { display: flex; align-items: end; justify-content: space-between; gap: 40px; padding: 72px 0 50px; }
+.dashboard-intro--compact { padding: 42px 0 30px; }
 .eyebrow--alert { gap: 8px; color: #ff4d2e; }
 .eyebrow--alert svg { width: 14px; }
 .turn-display { margin: 30px 0 7px; color: #b6ff3b; font: 700 18px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
 .turn-display span { color: #8a928c; font-size: 10px; letter-spacing: 0.2em; }
-.dashboard-title { max-width: 720px; margin: 0; font: 800 clamp(44px, 7vw, 88px)/0.95 "Bahnschrift", sans-serif; letter-spacing: -0.035em; }
+.dashboard-title { max-width: 720px; margin: 0; font: 800 58px/0.95 "Bahnschrift", sans-serif; letter-spacing: 0; }
 .glitch-enabled .glitch-target { text-shadow: 2px 0 #ff2bd6, -2px 0 #19e3ff; animation: title-jitter 5s steps(1, end) infinite; }
 .dashboard-subtitle { margin: 24px 0 0; color: #8a928c; font-size: 14px; line-height: 1.8; }
 .global-readout { min-width: 220px; border-left: 2px solid #ff4d2e; padding: 4px 0 4px 18px; }
@@ -68,8 +71,36 @@
 .global-readout__meta { justify-content: space-between; gap: 20px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.1em; }
 .global-readout__meta strong { color: #e5ebe3; font-size: 14px; }
 
-.faction-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.faction-card { min-width: 0; border: 1px solid var(--dashboard-border); border-top: 2px solid var(--card-accent); padding: 19px; background: rgb(17 21 18 / 0.86); box-shadow: 12px 12px 0 rgb(0 0 0 / 0.15); transition: border-color 160ms ease, transform 160ms ease; }
+.game-workspace { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; align-items: start; }
+.game-sidebar { position: sticky; top: 16px; display: grid; gap: 12px; }
+.player-faction { border: 1px solid var(--dashboard-border); border-top: 2px solid #b6ff3b; padding: 18px; background: rgb(17 21 18 / 0.92); }
+.game-sidebar__label { margin: 0 0 20px; color: #8a928c; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.16em; }
+.player-faction__code { display: block; color: #b6ff3b; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.player-faction__code--orange { color: #ff4d2e; }
+.player-faction__code--cyan { color: #19e3ff; }
+.player-faction__code--pink { color: #ff2bd6; }
+.player-faction__code--red { color: #ff304f; }
+.player-faction h2 { margin: 10px 0 14px; font: 700 24px/1.05 "Bahnschrift", sans-serif; }
+.player-faction > p:last-of-type { margin: 0; color: #8a928c; font-size: 11px; line-height: 1.7; }
+.player-faction__resources { display: grid; gap: 10px; margin-top: 21px; border-top: 1px solid var(--dashboard-border); padding-top: 16px; }
+.player-faction__resources span { display: flex; align-items: center; gap: 7px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; }
+.player-faction__resources svg { width: 13px; color: #19e3ff; }
+.player-faction__resources strong { margin-left: auto; color: #e5ebe3; font-size: 11px; }
+.game-actions { display: grid; gap: 5px; }
+.game-actions > button:first-child { width: 100%; justify-content: space-between; }
+.game-action { display: flex; min-height: 42px; align-items: center; gap: 9px; border: 1px solid var(--dashboard-border); padding: 0 12px; color: #aab1ac; background: rgb(17 21 18 / 0.82); cursor: pointer; font: 600 10px/1 "Cascadia Mono", monospace; text-align: left; }
+.game-action:hover:not(:disabled), .game-action--active { border-color: #19e3ff; color: #19e3ff; }
+.game-action:disabled { cursor: not-allowed; opacity: 0.5; }
+.game-action svg { width: 14px; }
+.game-action span { margin-left: auto; color: #667069; font-size: 8px; }
+.game-map-stage { min-width: 0; border: 1px solid var(--dashboard-border); padding: 0 18px 18px; background: rgb(8 11 9 / 0.52); }
+.game-map-stage .map-section { width: 100%; margin-top: 0; }
+
+.faction-roster { margin-top: 42px; }
+.faction-roster__heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 16px; border-bottom: 1px solid var(--dashboard-border); padding-bottom: 15px; }
+.faction-roster__heading h2 { margin: 0; font: 700 24px/1 "Bahnschrift", sans-serif; }
+.faction-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.faction-card { min-width: 0; border: 1px solid var(--dashboard-border); border-top: 2px solid var(--card-accent); padding: 15px; background: rgb(17 21 18 / 0.86); box-shadow: 8px 8px 0 rgb(0 0 0 / 0.15); transition: border-color 160ms ease, transform 160ms ease; }
 .faction-card:hover { border-color: var(--card-accent); transform: translateY(-3px); }
 .faction-card--lime { --card-accent: #b6ff3b; }
 .faction-card--orange { --card-accent: #ff4d2e; }
@@ -79,7 +110,7 @@
 .faction-card__index { color: var(--card-accent); }
 .faction-card__signal { width: 5px; height: 5px; background: var(--card-accent); box-shadow: 0 0 9px var(--card-accent); }
 .faction-card__id { overflow: hidden; margin-left: auto; text-overflow: ellipsis; white-space: nowrap; }
-.faction-card h2 { margin: 21px 0 28px; font: 700 24px/1 "Bahnschrift", sans-serif; }
+.faction-card h2 { min-height: 44px; margin: 18px 0 23px; font: 700 20px/1.1 "Bahnschrift", sans-serif; }
 .faction-card__resources { display: grid; gap: 17px; }
 .resource-line__label { gap: 8px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.1em; }
 .resource-line__label svg { width: 14px; height: 14px; }
@@ -90,7 +121,7 @@
 .tone-data { color: #19e3ff; }
 .tone-stability { color: #ff4d2e; }
 
-.dashboard-footer { justify-content: space-between; gap: 20px; padding: 44px 0 56px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.dashboard-footer { justify-content: space-between; gap: 20px; padding: 35px 0 48px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
 .dashboard-footer p { display: flex; align-items: center; gap: 9px; margin: 0; }
 .dashboard-footer button svg { width: 16px; }
 
@@ -101,14 +132,26 @@
 @media (max-width: 900px) {
   .dashboard-intro { align-items: start; flex-direction: column; padding-top: 52px; }
   .global-readout { width: min(100%, 300px); }
+  .game-workspace { grid-template-columns: 1fr; }
+  .game-sidebar { position: static; grid-template-columns: minmax(220px, 0.8fr) minmax(240px, 1.2fr); }
+  .game-actions { align-content: start; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .game-actions > button:first-child { grid-column: span 2; }
   .faction-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .faction-card:last-child { grid-column: span 2; }
 }
 
 @media (max-width: 560px) {
-  .dashboard-header, .dashboard-intro, .faction-grid, .dashboard-footer { width: min(100% - 30px, 1180px); }
+  .dashboard-header, .dashboard-intro, .faction-grid, .faction-roster, .game-workspace, .dashboard-footer { width: min(100% - 30px, 1180px); }
   .dashboard-header { min-height: 76px; }
   .header-status > span:not(.status-dot), .header-divider { display: none; }
+  .dashboard-title { font-size: 42px; }
+  .game-sidebar { grid-template-columns: 1fr; }
+  .game-actions { grid-template-columns: 1fr; }
+  .game-actions > button:first-child { grid-column: auto; }
+  .game-map-stage { padding-inline: 10px; }
+  .faction-roster__heading { align-items: start; flex-direction: column; }
   .faction-grid { grid-template-columns: 1fr; }
+  .faction-card:last-child { grid-column: auto; }
   .dashboard-footer { align-items: start; flex-direction: column-reverse; padding-bottom: 34px; }
   .dashboard-footer button { width: 100%; }
 }
