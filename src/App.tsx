@@ -41,6 +41,10 @@ function App() {
       key={selectedFactionId}
       selectedFactionId={selectedFactionId}
       onChangeFaction={() => setView("faction-select")}
+      onReturnToMenu={() => {
+        setSelectedFactionId(null);
+        setView("start");
+      }}
     />
   );
 }
