@@ -26,7 +26,7 @@ export const tutorialSteps: readonly TutorialStep[] = [
     target: "global-status",
     label: "全局风险",
     title: "漂移不会自己停下来",
-    description: "全局模型漂移越高，系统故障风险越大；全局稳定度越低，整个世界越接近资源崩塌。它们会随着每个回合持续变化。"
+    description: "全局模型漂移越高，系统故障风险越大；全局稳定度越低，整个世界越接近资源崩塌。它们会随着每个季度持续变化。"
   },
   {
     id: "world-map",
@@ -38,9 +38,9 @@ export const tutorialSteps: readonly TutorialStep[] = [
   {
     id: "turn-control",
     target: "turn-control",
-    label: "回合推进",
+    label: "时间推进",
     title: "所有代价都在结算时出现",
-    description: "点击“下一回合”后，地块产出会进入所属势力，模型消耗新鲜数据，并检查事件与结局。事件出现时必须先完成决策。"
+    description: "推进到下一季度后，剧情会主动出现。完成决策并看完影响结算，时间才会继续向前；地块产出、模型消耗、事件与结局也会在这条时间线上依次发生。"
   },
   {
     id: "faction-roster",

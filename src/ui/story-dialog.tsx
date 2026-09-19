@@ -1,20 +1,85 @@
-import { useEffect, useRef } from "react";
-import { ArrowRight, BookOpen, MessageSquareQuote, RadioTower } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, BookOpen, Gauge, MessageSquareQuote, RadioTower, TimerReset } from "lucide-react";
 import type { StoryChoice, StoryEvent } from "@/content/story-events";
 import { getAdvisor } from "@/content/faction-story";
+import { getDecisionImpacts } from "./time-flow";
 import "./event-dialog.css";
 import "./story-dialog.css";
+
+function StoryImpactPanel({
+  choice,
+  lifelineLabel,
+  liabilityLabel,
+  timeLabel,
+  onContinue
+}: {
+  choice: StoryChoice;
+  lifelineLabel: string;
+  liabilityLabel: string;
+  timeLabel: string;
+  onContinue: () => void;
+}) {
+  const [ready, setReady] = useState(false);
+  const continueRef = useRef<HTMLButtonElement>(null);
+  const impacts = getDecisionImpacts(choice, { lifeline: lifelineLabel, liability: liabilityLabel });
+
+  useEffect(() => {
+    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1400;
+    const timer = window.setTimeout(() => setReady(true), delay);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (ready) continueRef.current?.focus();
+  }, [ready]);
+
+  return (
+    <div className="story-impact" aria-live="polite">
+      <div className="story-impact__header">
+        <span><Gauge /> 决策影响</span>
+        <strong>{timeLabel}</strong>
+      </div>
+      <div className="story-impact__grid">
+        {impacts.map((impact, index) => (
+          <div
+            className={`story-impact__item story-impact__item--${impact.tone}`}
+            style={{ "--impact-delay": `${index * 180}ms` } as React.CSSProperties}
+            key={impact.id}
+          >
+            <span>{impact.label}</span>
+            <strong>{impact.value}</strong>
+            <i aria-hidden="true" />
+          </div>
+        ))}
+      </div>
+      <footer className="story-dialog__continue">
+        <span className={ready ? "story-impact__status story-impact__status--ready" : "story-impact__status"}>
+          <TimerReset /> {ready ? "时间线已更新" : "正在写入时间线..."}
+        </span>
+        <button ref={continueRef} type="button" disabled={!ready} onClick={onContinue}>
+          结束本季度 <ArrowRight />
+        </button>
+      </footer>
+    </div>
+  );
+}
 
 export function StoryDialog({
   event,
   perspective,
   selectedChoice,
+  lifelineLabel,
+  liabilityLabel,
+  timeLabel,
   onChoose,
   onContinue
 }: {
   event: StoryEvent;
   perspective: string;
   selectedChoice: StoryChoice | null;
+  lifelineLabel: string;
+  liabilityLabel: string;
+  timeLabel: string;
   onChoose: (choice: StoryChoice) => void;
   onContinue: () => void;
 }) {
@@ -87,11 +152,13 @@ export function StoryDialog({
               </button>
             ))}
           </div>
-        ) : (
-          <footer className="story-dialog__continue">
-            <button type="button" onClick={onContinue}>继续 <ArrowRight /></button>
-          </footer>
-        )}
+        ) : <StoryImpactPanel
+          choice={selectedChoice}
+          lifelineLabel={lifelineLabel}
+          liabilityLabel={liabilityLabel}
+          timeLabel={timeLabel}
+          onContinue={onContinue}
+        />}
       </section>
     </div>
   );

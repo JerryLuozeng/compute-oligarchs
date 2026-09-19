@@ -103,8 +103,10 @@
 .player-faction__advisor strong { color: #19e3ff; font-size: 11px; }
 .game-actions { display: grid; gap: 5px; }
 .game-actions > button:first-child { width: 100%; justify-content: space-between; }
-.game-action--story { border-color: rgb(255 157 59 / 0.5); color: #ff9d3b; }
-.game-action--story:hover:not(:disabled) { border-color: #ff9d3b; color: #ff9d3b; }
+.game-time-status { display: grid; min-height: 48px; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 8px; border: 1px solid rgb(255 157 59 / 0.42); padding: 8px 11px; color: #ff9d3b; background: rgb(255 157 59 / 0.05); }
+.game-time-status svg { width: 14px; }
+.game-time-status span { color: #aab1ac; font: 600 9px/1.4 "Cascadia Mono", monospace; }
+.game-time-status strong { color: #ff9d3b; font: 700 9px/1 "Cascadia Mono", monospace; }
 .game-action { display: flex; min-height: 42px; align-items: center; gap: 9px; border: 1px solid var(--dashboard-border); padding: 0 12px; color: #aab1ac; background: rgb(17 21 18 / 0.82); cursor: pointer; font: 600 10px/1 "Cascadia Mono", monospace; text-align: left; }
 .game-action:hover:not(:disabled), .game-action--active { border-color: #19e3ff; color: #19e3ff; }
 .game-action:disabled { cursor: not-allowed; opacity: 0.5; }
