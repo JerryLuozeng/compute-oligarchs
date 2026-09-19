@@ -28,6 +28,8 @@ import { Button } from "./button";
 import { EndingDialog } from "./ending-dialog";
 import { EventDialog } from "./event-dialog";
 import { MapTiles } from "./map-tiles";
+import { TutorialOverlay } from "./tutorial-overlay";
+import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
 import "./game-dashboard.css";
 
 const factionTone: Record<Faction["id"], string> = {
@@ -102,6 +104,7 @@ export function GameDashboard({
   const [activeEvent, setActiveEvent] = useState<RuntimeGameEvent | null>(null);
   const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(() => new Set());
   const [ending, setEnding] = useState<EndingResult | null>(null);
+  const [tutorialOpen, setTutorialOpen] = useState(() => !isTutorialComplete(window.localStorage));
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
 
@@ -134,6 +137,11 @@ export function GameDashboard({
     setResolvedEventIds(new Set());
     setEnding(null);
     window.scrollTo({ top: 0, left: 0 });
+  };
+
+  const dismissTutorial = () => {
+    markTutorialComplete(window.localStorage);
+    setTutorialOpen(false);
   };
 
   return (
@@ -173,7 +181,7 @@ export function GameDashboard({
           <h2 className="dashboard-title glitch-target">生产资料争夺战</h2>
           <p className="dashboard-subtitle">算力是社会化生产资料，数据是数字劳动的凝结。</p>
         </div>
-        <div className="global-readout">
+        <div className="global-readout" data-tutorial="global-status">
           <div className="global-readout__warning"><TriangleAlert /> 模型漂移监测</div>
           <div className="global-readout__value">{gameState.globalModelDrift.toFixed(1)}</div>
           <div className="global-readout__meta">
@@ -185,7 +193,7 @@ export function GameDashboard({
 
       <section className="game-workspace" aria-label="主游戏工作区">
         <aside className="game-sidebar">
-          <div className="player-faction">
+          <div className="player-faction" data-tutorial="faction-status">
             <p className="game-sidebar__label">CURRENT FACTION</p>
             <span className={`player-faction__code player-faction__code--${selectedProfile.tone}`}>{selectedProfile.code}</span>
             <h2>{selectedProfile.name}</h2>
@@ -200,22 +208,22 @@ export function GameDashboard({
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">
-            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || ending !== null} data-testid="next-turn-button">
+            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || ending !== null} data-testid="next-turn-button" data-tutorial="turn-control">
               下一回合 <ChevronRight />
             </Button>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
-            <button className="game-action" type="button" disabled title="后续版本开放"><BookOpen />新手引导<span>待开放</span></button>
+            <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
             <button className="game-action" type="button" disabled title="后续版本开放"><FolderClock />保存进度<span>待开放</span></button>
             <button className="game-action" type="button" onClick={onChangeFaction}><Users />更换势力</button>
           </nav>
         </aside>
 
-        <div className="game-map-stage">
+        <div className="game-map-stage" data-tutorial="world-map">
           <MapTiles tiles={gameState.tiles} />
         </div>
       </section>
 
-      <section className="faction-roster">
+      <section className="faction-roster" data-tutorial="faction-roster">
         <div className="faction-roster__heading">
           <p className="eyebrow">FACTION RESOURCE MONITOR</p>
           <h2>全势力资源态势</h2>
@@ -232,6 +240,7 @@ export function GameDashboard({
         <span>回合 {String(gameState.turn).padStart(2, "0")} / 模拟持续运行</span>
       </footer>
 
+      {tutorialOpen ? <TutorialOverlay onDismiss={dismissTutorial} /> : null}
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
       {ending === null ? null : (
         <EndingDialog ending={ending} onReturnToMenu={onReturnToMenu} onRestart={restartGame} />

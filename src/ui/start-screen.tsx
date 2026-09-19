@@ -3,11 +3,10 @@ import { ArrowRight, FolderOpen, Info, Play, Radio, Settings, TriangleAlert } fr
 import type { SavedGame, SaveSlot } from "./save-slots";
 import { readSaveSlots } from "./save-slots";
 import { AboutDialog, LoadGameDialog, SettingsDialog } from "./home-panels";
+import { resetTutorialProgress } from "./tutorial-storage";
 import "./game-flow.css";
 
 type HomePanel = "load" | "settings" | "about" | null;
-
-const tutorialStorageKey = "compute-oligarchs.tutorial-complete";
 
 export function StartScreen({
   onLoad,
@@ -83,8 +82,8 @@ export function StartScreen({
           onClose={() => setActivePanel(null)}
           onToggleSound={() => setSoundEnabled((enabled) => !enabled)}
           onResetGuide={() => {
-            window.localStorage.removeItem(tutorialStorageKey);
-            setResetStatus("引导记录已重置");
+            const reset = resetTutorialProgress(window.localStorage);
+            setResetStatus(reset ? "引导记录已重置" : "无法访问本地设置");
           }}
         />
       ) : null}

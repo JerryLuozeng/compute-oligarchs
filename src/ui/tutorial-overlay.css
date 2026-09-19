@@ -1,0 +1,44 @@
+.tutorial-layer { position: fixed; inset: 0; z-index: 70; pointer-events: auto; }
+.tutorial-shade { position: absolute; inset: 0; background: rgb(2 4 3 / 0.72); backdrop-filter: saturate(0.55); }
+.tutorial-spotlight { position: fixed; z-index: 1; border: 2px solid #b6ff3b; background: transparent; box-shadow: 0 0 0 9999px rgb(2 4 3 / 0.72), 0 0 28px rgb(182 255 59 / 0.28); pointer-events: none; transition: inset 220ms ease, width 220ms ease, height 220ms ease; }
+.tutorial-spotlight::before, .tutorial-spotlight::after { position: absolute; width: 17px; height: 17px; content: ""; }
+.tutorial-spotlight::before { top: -6px; left: -6px; border-top: 2px solid #19e3ff; border-left: 2px solid #19e3ff; }
+.tutorial-spotlight::after { right: -6px; bottom: -6px; border-right: 2px solid #19e3ff; border-bottom: 2px solid #19e3ff; }
+
+.tutorial-panel { position: fixed; z-index: 2; width: min(420px, calc(100vw - 48px)); border: 1px solid #19e3ff; border-top: 3px solid #b6ff3b; color: #e5ebe3; background: #0d110e; box-shadow: 14px 14px 0 rgb(0 0 0 / 0.45), 0 0 46px rgb(25 227 255 / 0.12); animation: tutorial-enter 180ms steps(3, end) both; }
+.tutorial-panel--left { left: 24px; }
+.tutorial-panel--right { right: 24px; }
+.tutorial-panel--top { top: 24px; }
+.tutorial-panel--bottom { bottom: 24px; }
+.tutorial-panel__header { display: flex; min-height: 48px; align-items: center; justify-content: space-between; border-bottom: 1px solid rgb(138 146 140 / 0.25); padding-left: 19px; color: #b6ff3b; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.14em; }
+.tutorial-panel__header button { display: grid; width: 48px; height: 48px; place-items: center; border: 0; border-left: 1px solid rgb(138 146 140 / 0.25); border-radius: 0; color: #8a928c; background: transparent; cursor: pointer; }
+.tutorial-panel__header button:hover, .tutorial-panel__header button:focus-visible { outline: 2px solid #19e3ff; outline-offset: -3px; color: #19e3ff; }
+.tutorial-panel__header svg { width: 16px; }
+.tutorial-panel__body { padding: 25px 25px 21px; }
+.tutorial-panel__body > p:first-child { margin: 0 0 11px; color: #ff4d2e; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.16em; }
+.tutorial-panel__body h2 { margin: 0; font: 800 27px/1.1 "Bahnschrift", sans-serif; letter-spacing: 0; }
+.tutorial-panel__body > p:last-child { margin: 17px 0 0; color: #aeb5b0; font-size: 12px; line-height: 1.8; }
+.tutorial-progress { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; padding: 0 25px 22px; }
+.tutorial-progress span { height: 3px; background: rgb(138 146 140 / 0.22); }
+.tutorial-progress .tutorial-progress__active { background: #b6ff3b; box-shadow: 0 0 8px rgb(182 255 59 / 0.35); }
+.tutorial-panel__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid rgb(138 146 140 / 0.25); }
+.tutorial-panel__actions button { display: flex; min-height: 54px; align-items: center; justify-content: center; gap: 8px; border: 0; border-right: 1px solid rgb(138 146 140 / 0.25); border-radius: 0; color: #aeb5b0; background: #111512; cursor: pointer; font: 700 11px/1 "Bahnschrift", sans-serif; }
+.tutorial-panel__actions button:last-child { border-right: 0; color: #0b0d0c; background: #b6ff3b; }
+.tutorial-panel__actions button:disabled { cursor: not-allowed; opacity: 0.35; }
+.tutorial-panel__actions button:hover:not(:disabled), .tutorial-panel__actions button:focus-visible { outline: 2px solid #19e3ff; outline-offset: -3px; }
+.tutorial-panel__actions svg { width: 15px; }
+
+@keyframes tutorial-enter { from { opacity: 0; transform: translate(6px, -4px); } to { opacity: 1; transform: translate(0); } }
+
+@media (max-width: 640px) {
+  .tutorial-panel { right: 12px; bottom: 12px; left: 12px; width: auto; }
+  .tutorial-panel--top { top: auto; }
+  .tutorial-panel__body { padding: 21px 19px 18px; }
+  .tutorial-panel__body h2 { font-size: 23px; }
+  .tutorial-progress { padding: 0 19px 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-panel { animation-duration: 0.01ms !important; }
+  .tutorial-spotlight { transition-duration: 0.01ms !important; }
+}
