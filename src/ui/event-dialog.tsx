@@ -52,7 +52,7 @@ export function EventDialog({
         </header>
 
         <div className="event-dialog__body">
-          <p className="event-dialog__eyebrow"><TriangleAlert /> 决策窗口 / 回合暂停</p>
+          <p className="event-dialog__eyebrow"><TriangleAlert /> 决策窗口 / 时间暂停</p>
           <h2 id="event-dialog-title" data-text={event.title}>{event.title}</h2>
           <p id="event-dialog-description" className="event-dialog__description">{event.description}</p>
           <blockquote>{event.policyText}</blockquote>
@@ -75,7 +75,7 @@ export function EventDialog({
         </div>
 
         <footer className="event-dialog__footer">
-          选择将立即写入本季度状态。未决事件会锁定回合推进。
+          选择将立即写入本季度状态。未决事件会锁定时间推进。
         </footer>
       </section>
     </div>
