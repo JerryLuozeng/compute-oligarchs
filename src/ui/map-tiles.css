@@ -29,7 +29,7 @@
 .legend-dot--sovereign { background: #ff4d2e; box-shadow: 0 0 8px #ff4d2e; }
 .legend-dot--labor { background: #19e3ff; box-shadow: 0 0 8px #19e3ff; }
 .legend-dot--labs { background: #ff2bd6; box-shadow: 0 0 8px #ff2bd6; }
-.legend-dot--socialist { border: 1px solid #b6ff3b; background: transparent; box-shadow: inset 0 0 5px #b6ff3b; }
+.legend-dot--socialist { border: 1px solid #e02c23; background: transparent; box-shadow: inset 0 0 5px #e02c23; }
 .legend-dot--commons { background: #8a928c; }
 .legend-dot--wasteland { background: #ff4d2e; }
 
@@ -51,7 +51,7 @@
 .tile--sovereign { --tile-accent: #ff4d2e; --tile-background: linear-gradient(140deg, rgb(255 77 46 / 0.19), #181311 70%); }
 .tile--labor { --tile-accent: #19e3ff; --tile-background: linear-gradient(140deg, rgb(25 227 255 / 0.18), #10171a 70%); }
 .tile--labs { --tile-accent: #ff2bd6; --tile-background: linear-gradient(140deg, rgb(255 43 214 / 0.16), #181118 70%); }
-.tile--socialist { --tile-accent: #b6ff3b; --tile-background: linear-gradient(140deg, rgb(182 255 59 / 0.12), #151812 70%); }
+.tile--socialist { --tile-accent: #e02c23; --tile-background: linear-gradient(140deg, rgb(224 44 35 / 0.16), #181110 70%); }
 .tile--commons { --tile-accent: #8a928c; --tile-background: linear-gradient(140deg, rgb(138 146 140 / 0.16), #151716 70%); }
 .tile--wasteland { --tile-accent: #ff4d2e; --tile-background: repeating-linear-gradient(125deg, #1b1513 0 8px, #221715 8px 10px); }
 .map-tile__index, .map-tile__drift { position: absolute; top: 14px; color: var(--tile-accent); font: 10px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }

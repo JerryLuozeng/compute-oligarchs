@@ -1,6 +1,6 @@
 .world-region-map {
   position: relative;
-  min-height: 560px;
+  min-height: 380px;
   overflow: hidden;
   border: 1px solid rgb(25 227 255 / 0.28);
   background:
@@ -34,9 +34,9 @@
 .world-region-map__viewport img,
 .world-region-map__viewport canvas {
   position: absolute;
-  width: auto;
-  max-width: 100%;
-  height: 100%;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
   object-fit: contain;
 }
 
@@ -96,11 +96,11 @@
 .world-region-map__footer strong { color: #8a928c; font-weight: 500; letter-spacing: 0; }
 
 @media (max-width: 900px) {
-  .world-region-map { min-height: 500px; }
+  .world-region-map { min-height: 320px; }
 }
 
 @media (max-width: 560px) {
-  .world-region-map { min-height: 430px; }
+  .world-region-map { min-height: 220px; }
   .world-region-map__viewport { inset: 10px 10px 45px; }
   .world-region-map__footer strong { display: none; }
 }
