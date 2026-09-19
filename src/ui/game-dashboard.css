@@ -60,6 +60,7 @@
 .eyebrow--alert { gap: 8px; color: #ff4d2e; }
 .eyebrow--alert svg { width: 14px; }
 .turn-display { margin: 30px 0 7px; color: #b6ff3b; font: 700 18px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.story-chapter-label { margin: 17px 0 -18px; color: #ff9d3b; font: 600 10px/1.4 "Cascadia Mono", monospace; }
 .turn-display span { color: #8a928c; font-size: 10px; letter-spacing: 0.2em; }
 .dashboard-title { max-width: 720px; margin: 0; font: 800 58px/0.95 "Bahnschrift", sans-serif; letter-spacing: 0; }
 .glitch-enabled .glitch-target { text-shadow: 2px 0 #ff2bd6, -2px 0 #19e3ff; animation: title-jitter 5s steps(1, end) infinite; }
@@ -86,8 +87,24 @@
 .player-faction__resources span { display: flex; align-items: center; gap: 7px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; }
 .player-faction__resources svg { width: 13px; color: #19e3ff; }
 .player-faction__resources strong { margin-left: auto; color: #e5ebe3; font-size: 11px; }
+.player-faction__arc { display: grid; gap: 18px; margin-top: 21px; border-top: 1px solid var(--dashboard-border); padding-top: 17px; }
+.player-faction__arc-row { position: relative; display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 9px; color: #b6ff3b; font: 600 9px/1.25 "Cascadia Mono", monospace; }
+.player-faction__arc-row--hazard { color: #ff9d3b; }
+.player-faction__arc-row span { min-width: 0; overflow-wrap: anywhere; }
+.player-faction__arc-row strong { color: #e5ebe3; font-size: 11px; }
+.player-faction__arc-row::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: rgb(138 146 140 / 0.16); content: ""; }
+.player-faction__arc-row i { position: absolute; bottom: 0; left: 0; z-index: 1; height: 2px; background: currentColor; }
+.player-faction__advisors { display: grid; gap: 10px; margin-top: 20px; border-top: 1px solid var(--dashboard-border); padding-top: 15px; }
+.player-faction__advisors-title { display: flex; align-items: center; gap: 7px; color: #8a928c; font: 600 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.08em; }
+.player-faction__advisors-title svg { width: 13px; color: #ff9d3b; }
+.player-faction__advisor { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; color: #d6ddd7; font: 600 10px/1.2 "Cascadia Mono", monospace; }
+.player-faction__advisor > span { display: grid; min-width: 0; gap: 4px; }
+.player-faction__advisor small { color: #69736c; font-size: 8px; }
+.player-faction__advisor strong { color: #19e3ff; font-size: 11px; }
 .game-actions { display: grid; gap: 5px; }
 .game-actions > button:first-child { width: 100%; justify-content: space-between; }
+.game-action--story { border-color: rgb(255 157 59 / 0.5); color: #ff9d3b; }
+.game-action--story:hover:not(:disabled) { border-color: #ff9d3b; color: #ff9d3b; }
 .game-action { display: flex; min-height: 42px; align-items: center; gap: 9px; border: 1px solid var(--dashboard-border); padding: 0 12px; color: #aab1ac; background: rgb(17 21 18 / 0.82); cursor: pointer; font: 600 10px/1 "Cascadia Mono", monospace; text-align: left; }
 .game-action:hover:not(:disabled), .game-action--active { border-color: #19e3ff; color: #19e3ff; }
 .game-action:disabled { cursor: not-allowed; opacity: 0.5; }
