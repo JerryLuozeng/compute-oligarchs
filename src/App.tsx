@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import type { GameState } from "@/core/models/game-state";
 import type { FactionId } from "@/core/models/ids";
 import { FactionSelect } from "@/ui/faction-select";
+import { FactionOpening } from "@/ui/faction-opening";
 import { GameDashboard } from "@/ui/game-dashboard";
 import { StartScreen } from "@/ui/start-screen";
 import type { SavedGame } from "@/ui/save-slots";
 
-type AppView = "start" | "faction-select" | "game";
+type AppView = "start" | "faction-select" | "faction-opening" | "game";
 
 function App() {
   const [view, setView] = useState<AppView>("start");
@@ -20,7 +21,7 @@ function App() {
   const enterGame = (factionId: FactionId) => {
     setSelectedFactionId(factionId);
     setLoadedGameState(null);
-    setView("game");
+    setView("faction-opening");
   };
 
   const loadGame = (savedGame: SavedGame) => {
@@ -38,6 +39,16 @@ function App() {
       <FactionSelect
         onBack={() => setView("start")}
         onConfirm={enterGame}
+      />
+    );
+  }
+
+  if (view === "faction-opening" && selectedFactionId !== null) {
+    return (
+      <FactionOpening
+        factionId={selectedFactionId}
+        onBack={() => setView("faction-select")}
+        onContinue={() => setView("game")}
       />
     );
   }

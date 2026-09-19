@@ -25,6 +25,7 @@ import {
 } from "@/content/event-runtime";
 import { evaluateEnding, type EndingResult } from "@/content/endings";
 import { getFactionProfile } from "@/content/factions";
+import { createFactionArcState, factionRoutes } from "@/content/faction-routes";
 import {
   createLampTendencyState,
   recordLampAllocation,
@@ -114,8 +115,10 @@ export function GameDashboard({
   const [tutorialOpen, setTutorialOpen] = useState(() => !isTutorialComplete(window.localStorage));
   const [lampState, setLampState] = useState(createLampTendencyState);
   const [lampOpen, setLampOpen] = useState(() => isTutorialComplete(window.localStorage));
+  const [arcState, setArcState] = useState(() => createFactionArcState(initialState, selectedFactionId));
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
+  const selectedRoute = factionRoutes[selectedFactionId];
 
   const advanceTurn = () => {
     if (activeEvent !== null || ending !== null || lampState.allocationCount === 0) return;
@@ -146,6 +149,7 @@ export function GameDashboard({
     setResolvedEventIds(new Set());
     setEnding(null);
     setLampState(createLampTendencyState());
+    setArcState(createFactionArcState(initialGameState, selectedFactionId));
     setLampOpen(true);
     window.scrollTo({ top: 0, left: 0 });
   };
@@ -224,6 +228,18 @@ export function GameDashboard({
                 <span><ShieldCheck />稳定 <strong>{selectedFaction.resources.stability.toFixed(1)}</strong></span>
               </div>
             )}
+            <div className="player-faction__arc" aria-label="势力命脉与隐患">
+              <div className="player-faction__arc-row">
+                <span>命脉 / {selectedRoute.lifeline}</span>
+                <strong>{arcState.lifeline.toFixed(0)}</strong>
+                <i style={{ width: `${arcState.lifeline}%` }} aria-hidden="true" />
+              </div>
+              <div className="player-faction__arc-row player-faction__arc-row--hazard">
+                <span>隐患 / {selectedRoute.liability}</span>
+                <strong>{arcState.liability.toFixed(0)}</strong>
+                <i style={{ width: `${arcState.liability}%` }} aria-hidden="true" />
+              </div>
+            </div>
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">

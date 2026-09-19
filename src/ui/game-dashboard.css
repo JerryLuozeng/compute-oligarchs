@@ -86,6 +86,13 @@
 .player-faction__resources span { display: flex; align-items: center; gap: 7px; color: #8a928c; font: 10px/1 "Cascadia Mono", monospace; }
 .player-faction__resources svg { width: 13px; color: #19e3ff; }
 .player-faction__resources strong { margin-left: auto; color: #e5ebe3; font-size: 11px; }
+.player-faction__arc { display: grid; gap: 18px; margin-top: 21px; border-top: 1px solid var(--dashboard-border); padding-top: 17px; }
+.player-faction__arc-row { position: relative; display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 9px; color: #b6ff3b; font: 600 9px/1.25 "Cascadia Mono", monospace; }
+.player-faction__arc-row--hazard { color: #ff9d3b; }
+.player-faction__arc-row span { min-width: 0; overflow-wrap: anywhere; }
+.player-faction__arc-row strong { color: #e5ebe3; font-size: 11px; }
+.player-faction__arc-row::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: rgb(138 146 140 / 0.16); content: ""; }
+.player-faction__arc-row i { position: absolute; bottom: 0; left: 0; z-index: 1; height: 2px; background: currentColor; }
 .game-actions { display: grid; gap: 5px; }
 .game-actions > button:first-child { width: 100%; justify-content: space-between; }
 .game-action { display: flex; min-height: 42px; align-items: center; gap: 9px; border: 1px solid var(--dashboard-border); padding: 0 12px; color: #aab1ac; background: rgb(17 21 18 / 0.82); cursor: pointer; font: 600 10px/1 "Cascadia Mono", monospace; text-align: left; }
