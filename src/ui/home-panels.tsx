@@ -10,6 +10,7 @@ import { aboutContent } from "@/content/about";
 import { getFactionProfile } from "@/content/factions";
 import type { SavedGame, SaveSlot } from "./save-slots";
 import { HomeDialog } from "./home-dialog";
+import { getTimeCoordinate } from "./time-flow";
 
 export function LoadGameDialog({
   slots,
@@ -46,7 +47,7 @@ export function LoadGameDialog({
               ) : (
                 <>
                   <strong>{getFactionProfile(save.selectedFactionId).name}</strong>
-                  <span className="save-slot__meta"><Clock3 />回合 {save.session.gameState.turn}</span>
+                  <span className="save-slot__meta"><Clock3 />{getTimeCoordinate(save.session.gameState.turn).compactLabel}</span>
                   <small>{save.savedAt.slice(0, 16).replace("T", " ")} UTC</small>
                   <ArrowRight className="save-slot__arrow" />
                 </>
@@ -87,7 +88,7 @@ export function SaveGameDialog({
             <small>
               {slot.savedGame === null
                 ? slot.status === "invalid" ? "替换损坏档案" : "空档位"
-                : `${getFactionProfile(slot.savedGame.selectedFactionId).name} / 回合 ${slot.savedGame.session.gameState.turn}`}
+                : `${getFactionProfile(slot.savedGame.selectedFactionId).name} / ${getTimeCoordinate(slot.savedGame.session.gameState.turn).compactLabel}`}
             </small>
           </button>
         ))}

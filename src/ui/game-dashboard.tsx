@@ -63,6 +63,7 @@ import {
   type SaveSlot
 } from "./save-slots";
 import { StoryDialog } from "./story-dialog";
+import { getTimeCoordinate } from "./time-flow";
 import { TutorialOverlay } from "./tutorial-overlay";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
 import "./game-dashboard.css";
@@ -163,18 +164,43 @@ export function GameDashboard({
   const storyComplete = isStoryComplete(storyProgress, lampState, selectedFactionId, gameState);
   const pendingStory = findNextStoryEvent(storyProgress, lampState, selectedFactionId, gameState);
   const factionAdvisors = getFactionAdvisors(selectedFactionId);
+  const currentTime = getTimeCoordinate(gameState.turn);
+  const nextTime = getTimeCoordinate(gameState.turn + 1);
+  const timeAdvanceBlocked = activeEvent !== null
+    || activeStory !== null
+    || ending !== null
+    || settlement !== null
+    || lampState.chapterAllocationCount === 0;
 
-  const advanceTurn = () => {
-    if (activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0) return;
+  const resolveTimeConsequences = (state: GameState) => {
+    const nextEnding = evaluateEnding(state, selectedFactionId);
+    setEnding(nextEnding);
+    setActiveEvent(nextEnding === null
+      ? findTriggeredEvent(state, resolvedEventIds) ?? null
+      : null);
+  };
+
+  const advanceTime = () => {
+    if (timeAdvanceBlocked) return;
+
+    if (pendingStory === undefined && !storyComplete) {
+      const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId, gameState);
+      if (nextProgress !== storyProgress) {
+        setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
+        return;
+      }
+    }
 
     const nextState = tick(gameState);
-    const nextEnding = evaluateEnding(nextState, selectedFactionId);
-    const nextEvent = nextEnding === null
-      ? findTriggeredEvent(nextState, resolvedEventIds) ?? null
-      : null;
+    const nextStory = findNextStoryEvent(storyProgress, lampState, selectedFactionId, nextState);
     setGameState(nextState);
-    setActiveEvent(nextEvent);
-    setEnding(nextEnding);
+    if (nextStory !== undefined) {
+      setActiveStory(nextStory);
+      setStoryChoice(null);
+      return;
+    }
+
+    resolveTimeConsequences(nextState);
   };
 
   const resolveEvent = (option: RuntimeGameEventOption) => {
@@ -242,20 +268,6 @@ export function GameDashboard({
     setLampOpen(false);
   };
 
-  const advanceStory = () => {
-    if (activeEvent !== null || activeStory !== null || ending !== null || settlement !== null || lampState.chapterAllocationCount === 0) return;
-    if (pendingStory !== undefined) {
-      setActiveStory(pendingStory);
-      setStoryChoice(null);
-      return;
-    }
-
-    const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId, gameState);
-    if (nextProgress !== storyProgress) {
-      setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
-    }
-  };
-
   const chooseStory = (choice: StoryChoice) => {
     if (activeStory === null || storyChoice !== null) return;
     setStoryProgress((current) => recordStoryChoice(current, activeStory, choice.id));
@@ -276,6 +288,24 @@ export function GameDashboard({
 
     setActiveStory(null);
     setStoryChoice(null);
+    const nextEnding = evaluateEnding(gameState, selectedFactionId);
+    if (nextEnding !== null) {
+      setEnding(nextEnding);
+      return;
+    }
+
+    const nextEvent = findTriggeredEvent(gameState, resolvedEventIds) ?? null;
+    if (nextEvent !== null) {
+      setActiveEvent(nextEvent);
+      return;
+    }
+
+    if (findNextStoryEvent(storyProgress, lampState, selectedFactionId, gameState) === undefined) {
+      const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId, gameState);
+      if (nextProgress !== storyProgress) {
+        setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
+      }
+    }
   };
 
   const continueSettlement = () => {
@@ -319,7 +349,7 @@ export function GameDashboard({
           <p className="eyebrow eyebrow--alert"><Activity /> QUARTERLY STATE REPORT</p>
           <p className="story-chapter-label">{getStoryChapter(storyProgress)} / {selectedRoute.title}</p>
           <p className="turn-display" data-testid="turn-number">
-            <span>回合</span> {String(gameState.turn).padStart(2, "0")}
+            <span>时间坐标</span> {currentTime.compactLabel}
           </p>
           <h2 className="dashboard-title glitch-target">生产资料争夺战</h2>
           <p className="dashboard-subtitle">算力是社会化生产资料，数据是数字劳动的凝结。</p>
@@ -374,13 +404,14 @@ export function GameDashboard({
           </div>
 
           <nav className="game-actions" aria-label="游戏操作">
-            <Button type="button" size="lg" onClick={advanceTurn} disabled={activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0} data-testid="next-turn-button" data-tutorial="turn-control">
-              下一回合 <ChevronRight />
+            <Button type="button" size="lg" onClick={advanceTime} disabled={timeAdvanceBlocked} data-testid="next-turn-button" data-tutorial="turn-control">
+              推进至 {nextTime.compactLabel} <ChevronRight />
             </Button>
-            <button className="game-action game-action--story" type="button" onClick={advanceStory} disabled={activeEvent !== null || activeStory !== null || ending !== null || lampState.chapterAllocationCount === 0 || storyComplete}>
-              <BookOpen />{storyComplete ? "剧情已完结" : pendingStory === undefined ? "进入下一章" : "推进剧情"}
-              <span>{storyComplete ? "终" : pendingStory?.displayCode ?? pendingStory?.id ?? "下一章"}</span>
-            </button>
+            <div className="game-time-status" aria-live="polite">
+              <BookOpen />
+              <span>{storyComplete ? "时间线已进入自由推演" : pendingStory === undefined ? "本章即将结算" : "下一季度将触发剧情"}</span>
+              <strong>{storyComplete ? "∞" : pendingStory?.displayCode ?? pendingStory?.id ?? "章末"}</strong>
+            </div>
             <button className="game-action game-action--active" type="button"><Info />态势总览</button>
             <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
             <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
@@ -409,7 +440,7 @@ export function GameDashboard({
 
       <footer className="dashboard-footer">
         <p><span className="footer-pulse" aria-hidden="true" /> 数据持续消耗。世界持续变化。</p>
-        <span>回合 {String(gameState.turn).padStart(2, "0")} / 模拟持续运行</span>
+        <span>{currentTime.label} / 时间持续向前</span>
       </footer>
 
       {tutorialOpen ? <TutorialOverlay onDismiss={dismissTutorial} /> : null}
@@ -436,6 +467,9 @@ export function GameDashboard({
           event={activeStory}
           perspective={getStoryPerspective(activeStory, selectedFactionId)}
           selectedChoice={storyChoice}
+          lifelineLabel={selectedRoute.lifeline}
+          liabilityLabel={selectedRoute.liability}
+          timeLabel={currentTime.label}
           onChoose={chooseStory}
           onContinue={continueStory}
         />
