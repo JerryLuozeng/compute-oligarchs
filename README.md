@@ -33,3 +33,23 @@ http://127.0.0.1:4173/
 - `dist/assets/azgaar_region_preview.png`：横向战略地图展示图
 - `dist/assets/azgaar_region_id_map.png`：区域 ID 图
 - `generated-map/`：地图生成来源与再生成脚本
+# 算力寡头 · Compute Oligarchs
+
+An AI-punk social simulation sandbox. The singularity never arrives.
+
+## Stack
+
+Tauri 2 + React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui.
+
+## Development
+
+```bash
+pnpm install
+pnpm dev
+pnpm test
+pnpm lint
+pnpm typecheck
+pnpm tauri dev
+```
+
+The desktop build requires the Rust stable toolchain and the platform prerequisites listed by Tauri.

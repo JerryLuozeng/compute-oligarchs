@@ -1,0 +1,50 @@
+.faction-opening {
+  --opening-accent: var(--status-normal);
+  background-image: linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+}
+.faction-opening--orange { --opening-accent: #b77a68; }
+.faction-opening--cyan { --opening-accent: #7da5aa; }
+.faction-opening--pink { --opening-accent: #a8879c; }
+.faction-opening--red { --opening-accent: #b56868; }
+.faction-opening__header,
+.faction-opening__layout { position: relative; z-index: 6; width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
+.faction-opening__layout { display: grid; min-height: calc(100vh - 88px); grid-template-columns: minmax(0, 1fr) 260px; align-items: center; gap: 70px; padding-block: 48px; }
+.faction-opening__story { max-width: 760px; }
+.faction-opening__story .flow-eyebrow { color: var(--opening-accent); }
+.faction-opening__story h1 { margin: 20px 0 0; color: #e5ebe3; font: 800 54px/1.08 "Bahnschrift", sans-serif; letter-spacing: 0; }
+.faction-opening__theme { margin: 18px 0 0; color: var(--opening-accent); font-size: 14px; line-height: 1.6; }
+.faction-opening__passage { margin-top: 36px; border-left: 2px solid var(--opening-accent); padding-left: 23px; }
+.faction-opening__passage p { margin: 0 0 13px; color: #e5ebe3; font-size: 16px; line-height: 1.85; }
+.faction-opening__passage p:last-child { margin-bottom: 0; }
+.faction-opening__playstyle { max-width: 690px; margin: 28px 0 28px; color: #99a49d; font-size: 12px; line-height: 1.8; }
+.faction-opening__story > button { border-radius: 0; letter-spacing: 0; }
+.faction-opening__ledger { align-self: center; border-top: 2px solid var(--opening-accent); border-bottom: 1px solid var(--flow-line); padding-block: 20px 24px; }
+.faction-opening__ledger > p { margin: 0 0 11px; color: var(--opening-accent); font: 600 9px/1.4 "Cascadia Mono", monospace; }
+.faction-opening__ledger h2 { margin: 0 0 27px; font: 700 23px/1 "Bahnschrift", sans-serif; }
+.faction-opening__ledger h3 { margin: 0 0 12px; color: #777d75; font: 600 8px/1 "Cascadia Mono", monospace; letter-spacing: 0.12em; }
+.faction-opening__metrics, .faction-opening__arc { display: grid; gap: 15px; }
+.faction-opening__metrics span, .faction-opening__arc span { display: flex; align-items: center; gap: 8px; color: #aeb7af; font: 11px/1.3 "Cascadia Mono", monospace; }
+.faction-opening__metrics svg { width: 15px; color: var(--opening-accent); }
+.faction-opening__metrics strong, .faction-opening__arc strong { margin-left: auto; color: #e5ebe3; font-size: 13px; }
+.faction-opening__ledger-group--arc { margin-top: 25px; border-top: 1px solid var(--flow-line); padding-top: 23px; }
+.faction-opening__arc { margin-top: 0; }
+.faction-opening__arc strong { color: var(--opening-accent); }
+.faction-opening__arc span:last-child strong { color: var(--status-watch); }
+
+@media (max-width: 800px) {
+  .faction-opening__layout { grid-template-columns: 1fr; gap: 35px; }
+  .faction-opening__ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+  .faction-opening__ledger > p, .faction-opening__ledger h2 { grid-column: 1 / -1; }
+  .faction-opening__ledger-group--arc { margin-top: 0; border-top: 0; padding-top: 0; }
+}
+
+@media (max-width: 560px) {
+  .faction-opening__header, .faction-opening__layout { width: min(100% - 30px, 1180px); }
+  .faction-opening__layout { align-items: start; padding-block: 45px; }
+  .faction-opening__story h1 { font-size: 42px; }
+  .faction-opening__passage { margin-top: 28px; padding-left: 15px; }
+  .faction-opening__passage p { font-size: 14px; }
+  .faction-opening__story > button { width: 100%; }
+  .faction-opening__ledger { grid-template-columns: 1fr; }
+  .faction-opening__ledger-group--arc { margin-top: 24px; border-top: 1px solid var(--flow-line); padding-top: 20px; }
+}

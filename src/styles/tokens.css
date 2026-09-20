@@ -1,0 +1,131 @@
+:root {
+  /* Source palette: archival paper, printing ink and institutional signals. */
+  --ds-ink-950: #252720;
+  --ds-ink-900: #2d3028;
+  --ds-ink-850: #35382f;
+  --ds-ink-800: #404339;
+  --ds-paper-50: #f1ead7;
+  --ds-paper-100: #e5ddc8;
+  --ds-paper-300: #b9b09d;
+  --ds-paper-500: #817b6f;
+  --ds-red-700: #7f3430;
+  --ds-red-500: #a65349;
+  --ds-indigo-700: #283950;
+  --ds-indigo-500: #50677e;
+  --ds-ochre-600: #987744;
+  --ds-ochre-400: #c1a466;
+  --ds-sage-600: #68735f;
+  --ds-sage-400: #88947b;
+  --ds-fault-cyan: #4dcbd4;
+  --ds-fault-magenta: #c4568e;
+
+  /* Daily terminal surfaces. */
+  --ds-color-canvas: #34372f;
+  --ds-color-panel: var(--ds-ink-900);
+  --ds-color-panel-raised: var(--ds-ink-850);
+  --ds-color-panel-strong: var(--ds-ink-800);
+  --ds-color-overlay: rgb(37 39 32 / 0.9);
+  --ds-color-border-subtle: rgb(229 221 200 / 0.14);
+  --ds-color-border: rgb(229 221 200 / 0.22);
+  --ds-color-border-strong: rgb(229 221 200 / 0.38);
+  --ds-color-text: var(--ds-paper-100);
+  --ds-color-text-muted: var(--ds-paper-300);
+  --ds-color-text-dim: var(--ds-paper-500);
+
+  /* Semantic status signals. Fault colors are intentionally excluded. */
+  --ds-color-stable: var(--ds-sage-400);
+  --ds-color-stable-emphasis: #a6b292;
+  --ds-color-info: #71869b;
+  --ds-color-watch: var(--ds-ochre-400);
+  --ds-color-danger: var(--ds-red-500);
+  --ds-color-record: #756f82;
+  --ds-color-action: var(--ds-ochre-400);
+  --ds-color-action-ink: var(--ds-ink-950);
+  --ds-color-focus: var(--ds-paper-50);
+
+  /* The five lamps are social directions, not generic status colors. */
+  --ds-lamp-industry: var(--ds-ochre-400);
+  --ds-lamp-order: #657991;
+  --ds-lamp-workshop: var(--ds-paper-300);
+  --ds-lamp-commons: var(--ds-sage-400);
+  --ds-lamp-livelihood: var(--ds-red-500);
+
+  /* Fault colors may only be exposed through drift visualization. */
+  --ds-color-fault-cyan: var(--ds-fault-cyan);
+  --ds-color-fault-magenta: var(--ds-fault-magenta);
+  --ds-drift-rgb-offset: 0px;
+  --ds-drift-noise-opacity: 0;
+  --ds-drift-scan-opacity: 0;
+
+  --font-display: "Bahnschrift Condensed", "Bahnschrift", "Microsoft YaHei UI", sans-serif;
+  --font-interface: "Bahnschrift", "Microsoft YaHei UI", sans-serif;
+  --font-data: "Cascadia Mono", "Microsoft YaHei UI", monospace;
+  --ds-text-xs: 0.6875rem;
+  --ds-text-sm: 0.75rem;
+  --ds-text-md: 0.875rem;
+  --ds-text-lg: 1rem;
+  --ds-text-xl: 1.25rem;
+  --ds-text-2xl: 1.75rem;
+  --ds-text-display: 2.5rem;
+
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+  --ds-space-12: 3rem;
+
+  --ds-border-thin: 1px;
+  --ds-border-emphasis: 2px;
+  --ds-radius-none: 0;
+  --ds-radius-sm: 2px;
+  --ds-radius-md: 4px;
+  --ds-shadow-panel: 10px 10px 0 rgb(0 0 0 / 0.36);
+  --ds-shadow-dialog: 14px 14px 0 rgb(0 0 0 / 0.42);
+
+  --ds-duration-fast: 120ms;
+  --ds-duration-normal: 180ms;
+  --ds-duration-slow: 280ms;
+  --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ds-z-base: 0;
+  --ds-z-sticky: 20;
+  --ds-z-overlay: 70;
+  --ds-z-modal: 100;
+  --ds-z-critical: 120;
+
+  /* Compatibility aliases for the existing component CSS. */
+  --terminal-bg: var(--ds-color-canvas);
+  --terminal-surface: var(--ds-color-panel);
+  --terminal-surface-raised: var(--ds-color-panel-raised);
+  --terminal-border: var(--ds-color-border);
+  --terminal-border-strong: var(--ds-color-border-strong);
+  --terminal-text: var(--ds-color-text);
+  --terminal-text-muted: var(--ds-color-text-muted);
+  --terminal-text-dim: var(--ds-color-text-dim);
+  --status-normal: var(--ds-color-stable);
+  --status-info: var(--ds-color-info);
+  --status-watch: var(--ds-color-watch);
+  --status-danger: var(--ds-color-danger);
+  --status-record: var(--ds-color-record);
+
+  /* Tailwind 3 and shadcn compatibility values. */
+  --background: 75 8% 20%;
+  --foreground: 43 31% 84%;
+  --card: 76 9% 17%;
+  --card-foreground: 43 31% 84%;
+  --primary: 39 48% 58%;
+  --primary-foreground: 75 8% 15%;
+  --secondary: 216 33% 24%;
+  --secondary-foreground: 43 31% 84%;
+  --muted: 48 10% 12%;
+  --muted-foreground: 42 13% 67%;
+  --accent: 3 37% 48%;
+  --accent-foreground: 43 43% 90%;
+  --destructive: 3 37% 48%;
+  --destructive-foreground: 43 43% 90%;
+  --border: 43 13% 24%;
+  --input: 43 13% 24%;
+  --ring: 43 43% 90%;
+  --radius: var(--ds-radius-md);
+}
