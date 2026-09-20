@@ -28,7 +28,9 @@ import {
   type StrategicAction
 } from "@/core/systems/strategic-actions";
 import {
+  createEventDecisionState,
   findTriggeredEvent,
+  recordEventDecision,
   type RuntimeGameEvent,
   type RuntimeGameEventOption
 } from "@/content/event-runtime";
@@ -165,6 +167,7 @@ export function GameDashboard({
   const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(
     () => new Set(startingSession.resolvedEventIds)
   );
+  const [eventDecisionState, setEventDecisionState] = useState(startingSession.eventDecisionState);
   const [ending, setEnding] = useState<EndingResult | null>(null);
   const [tutorialOpen, setTutorialOpen] = useState(
     () => initialSession === undefined && !isTutorialComplete(window.localStorage)
@@ -265,6 +268,7 @@ export function GameDashboard({
 
     const nextState = option.effect(gameState);
     setGameState(nextState);
+    setEventDecisionState((current) => recordEventDecision(current, activeEvent, option, gameState.turn));
     setResolvedEventIds((currentIds) => new Set(currentIds).add(activeEvent.id));
     setActiveEvent(null);
     const nextEnding = evaluateEnding(nextState, selectedFactionId);
@@ -277,6 +281,7 @@ export function GameDashboard({
     setGameState(freshSession.gameState);
     setActiveEvent(null);
     setResolvedEventIds(new Set());
+    setEventDecisionState(createEventDecisionState());
     setEnding(null);
     setLampState(freshSession.lampState);
     setArcState(freshSession.arcState);
@@ -308,6 +313,7 @@ export function GameDashboard({
     policyLegacyState,
     strategicActionState,
     interestPressureState,
+    eventDecisionState,
     resolvedEventIds: [...resolvedEventIds]
   });
 
@@ -359,7 +365,22 @@ export function GameDashboard({
   const continueStory = () => {
     if (activeStory === null || storyChoice === null) return;
     if (activeStory.id === "E41") {
-      const narrativeEnding = evaluateNarrativeEnding(gameState, selectedFactionId, arcState, lampState, storyProgress);
+      const narrativeEnding = evaluateNarrativeEnding(
+        gameState,
+        selectedFactionId,
+        arcState,
+        lampState,
+        storyProgress,
+        {
+          policyState: policyLegacyState,
+          actionState: strategicActionState,
+          pressureState: interestPressureState,
+          advisorTrust,
+          advisorRelationships: advisorRelationshipState,
+          eventDecisions: eventDecisionState,
+          resolvedEventIds: [...resolvedEventIds]
+        }
+      );
       setActiveStory(null);
       setStoryChoice(null);
       setEnding(narrativeEnding);

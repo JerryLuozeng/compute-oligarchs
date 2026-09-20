@@ -29,7 +29,7 @@ describe("readSaveSlots", () => {
     expect(slots[0]?.status).toBe("empty");
     expect(slots[1]?.status).toBe("ready");
     expect(slots[1]?.savedGame?.selectedFactionId).toBe("labor_union");
-    expect(slots[1]?.savedGame?.version).toBe(6);
+    expect(slots[1]?.savedGame?.version).toBe(7);
     expect(slots[1]?.savedGame?.session.gameState.turn).toBe(initialGameState.turn);
     expect(slots[1]?.savedGame?.session.storyProgress.chapterIndex).toBe(0);
   });
@@ -53,7 +53,7 @@ describe("readSaveSlots", () => {
     expect(slots.every((slot) => slot.status === "empty")).toBe(true);
   });
 
-  it("writes and restores a complete version six session", () => {
+  it("writes and restores a complete version seven session", () => {
     const entries: Record<string, string> = {};
     const session = createGameSession(initialGameState, "consortium");
     const saved = writeSaveSlot(
@@ -99,6 +99,14 @@ describe("readSaveSlots", () => {
             reason: "advice-followed"
           }]
         },
+        eventDecisionState: {
+          records: [{
+            turn: 2,
+            eventId: "dynamic-labor-rupture",
+            optionId: "open-collective-bargaining",
+            origin: "dynamic"
+          }]
+        },
         resolvedEventIds: ["data-strike"]
       },
       () => new Date("2026-09-20T08:00:00.000Z")
@@ -121,6 +129,7 @@ describe("readSaveSlots", () => {
     });
     expect(restored?.session.interestPressureState.pressures.workshop).toBe(24);
     expect(restored?.session.advisorRelationshipState.history[0]?.advisorId).toBe("park");
+    expect(restored?.session.eventDecisionState.records[0]?.optionId).toBe("open-collective-bargaining");
   });
 
   it("migrates version two sessions with an empty policy history", () => {
@@ -143,11 +152,12 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(6);
+    expect(slots[0]?.savedGame?.version).toBe(7);
     expect(slots[0]?.savedGame?.session.policyLegacyState.records).toEqual([]);
     expect(slots[0]?.savedGame?.session.strategicActionState.status).toBe("complete");
     expect(slots[0]?.savedGame?.session.interestPressureState.pressures.workshop).toBe(0);
     expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
+    expect(slots[0]?.savedGame?.session.eventDecisionState.records).toEqual([]);
   });
 
   it("migrates version three sessions with an empty action history", () => {
@@ -171,7 +181,7 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(6);
+    expect(slots[0]?.savedGame?.version).toBe(7);
     expect(slots[0]?.savedGame?.session.strategicActionState.history).toEqual([]);
     expect(slots[0]?.savedGame?.session.interestPressureState.history).toEqual([]);
     expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
@@ -199,7 +209,7 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(6);
+    expect(slots[0]?.savedGame?.version).toBe(7);
     expect(slots[0]?.savedGame?.session.interestPressureState.pressures.industry).toBe(0);
     expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
   });
@@ -227,8 +237,36 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(6);
+    expect(slots[0]?.savedGame?.version).toBe(7);
     expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
+  });
+
+  it("migrates version six sessions with empty event decisions", () => {
+    const session = createGameSession(initialGameState, "consortium");
+    const versionSixSession = {
+      gameState: session.gameState,
+      lampState: session.lampState,
+      arcState: session.arcState,
+      advisorTrust: session.advisorTrust,
+      advisorRelationshipState: session.advisorRelationshipState,
+      storyProgress: session.storyProgress,
+      policyLegacyState: session.policyLegacyState,
+      strategicActionState: session.strategicActionState,
+      interestPressureState: session.interestPressureState,
+      resolvedEventIds: session.resolvedEventIds
+    };
+    const slots = readSaveSlots(createStorage({
+      [`${SAVE_STORAGE_PREFIX}1`]: JSON.stringify({
+        version: 6,
+        savedAt: "2026-09-20T08:00:00.000Z",
+        selectedFactionId: "consortium",
+        session: versionSixSession
+      })
+    }));
+
+    expect(slots[0]?.status).toBe("ready");
+    expect(slots[0]?.savedGame?.version).toBe(7);
+    expect(slots[0]?.savedGame?.session.eventDecisionState.records).toEqual([]);
   });
 
   it("rejects invalid slot indexes and handles write failures", () => {

@@ -26,6 +26,11 @@ import {
   isAdvisorRelationshipState,
   type AdvisorRelationshipState
 } from "@/content/advisor-system";
+import {
+  createEventDecisionState,
+  isEventDecisionState,
+  type EventDecisionState
+} from "@/content/event-runtime";
 
 export const SAVE_SLOT_COUNT = 6;
 export const SAVE_STORAGE_PREFIX = "compute-oligarchs.save-slot.";
@@ -40,11 +45,12 @@ export interface GameSession {
   strategicActionState: StrategicActionState;
   interestPressureState: InterestPressureState;
   advisorRelationshipState: AdvisorRelationshipState;
+  eventDecisionState: EventDecisionState;
   resolvedEventIds: readonly string[];
 }
 
 export interface SavedGame {
-  version: 6;
+  version: 7;
   savedAt: string;
   selectedFactionId: FactionId;
   session: GameSession;
@@ -142,10 +148,11 @@ const isStoryProgress = (value: unknown): value is StoryProgress =>
   && Array.isArray(value.reactiveChapterIndexes)
   && value.reactiveChapterIndexes.every((index) => Number.isInteger(index));
 
-type VersionTwoGameSession = Omit<GameSession, "policyLegacyState" | "strategicActionState" | "interestPressureState" | "advisorRelationshipState">;
-type VersionThreeGameSession = Omit<GameSession, "strategicActionState" | "interestPressureState" | "advisorRelationshipState">;
-type VersionFourGameSession = Omit<GameSession, "interestPressureState" | "advisorRelationshipState">;
-type VersionFiveGameSession = Omit<GameSession, "advisorRelationshipState">;
+type VersionTwoGameSession = Omit<GameSession, "policyLegacyState" | "strategicActionState" | "interestPressureState" | "advisorRelationshipState" | "eventDecisionState">;
+type VersionThreeGameSession = Omit<GameSession, "strategicActionState" | "interestPressureState" | "advisorRelationshipState" | "eventDecisionState">;
+type VersionFourGameSession = Omit<GameSession, "interestPressureState" | "advisorRelationshipState" | "eventDecisionState">;
+type VersionFiveGameSession = Omit<GameSession, "advisorRelationshipState" | "eventDecisionState">;
+type VersionSixGameSession = Omit<GameSession, "eventDecisionState">;
 
 const isVersionTwoSession = (value: unknown, factionId: FactionId): value is VersionTwoGameSession =>
   isRecord(value) && isGameState(value.gameState) && isLampState(value.lampState)
@@ -164,9 +171,13 @@ const isVersionFiveSession = (value: unknown, factionId: FactionId): value is Ve
   isVersionFourSession(value, factionId)
   && isInterestPressureState((value as unknown as Record<string, unknown>).interestPressureState);
 
-const isSession = (value: unknown, factionId: FactionId): value is GameSession =>
+const isVersionSixSession = (value: unknown, factionId: FactionId): value is VersionSixGameSession =>
   isVersionFiveSession(value, factionId)
   && isAdvisorRelationshipState((value as unknown as Record<string, unknown>).advisorRelationshipState);
+
+const isSession = (value: unknown, factionId: FactionId): value is GameSession =>
+  isVersionSixSession(value, factionId)
+  && isEventDecisionState((value as unknown as Record<string, unknown>).eventDecisionState);
 
 export const createGameSession = (gameState: GameState, factionId: FactionId): GameSession => ({
   gameState,
@@ -178,6 +189,7 @@ export const createGameSession = (gameState: GameState, factionId: FactionId): G
   strategicActionState: createStrategicActionState(),
   interestPressureState: createInterestPressureState(),
   advisorRelationshipState: createAdvisorRelationshipState(),
+  eventDecisionState: createEventDecisionState(),
   resolvedEventIds: []
 });
 
@@ -187,45 +199,59 @@ const parseSavedGame = (value: string): SavedGame | null => {
     if (!isRecord(candidate) || typeof candidate.savedAt !== "string"
       || Number.isNaN(Date.parse(candidate.savedAt)) || !isFactionId(candidate.selectedFactionId)) return null;
 
-    if (candidate.version === 6 && isSession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 7 && isSession(candidate.session, candidate.selectedFactionId)) {
       return candidate as unknown as SavedGame;
+    }
+    if (candidate.version === 6 && isVersionSixSession(candidate.session, candidate.selectedFactionId)) {
+      return {
+        version: 7,
+        savedAt: candidate.savedAt,
+        selectedFactionId: candidate.selectedFactionId,
+        session: { ...candidate.session, eventDecisionState: createEventDecisionState() }
+      };
     }
     if (candidate.version === 5 && isVersionFiveSession(candidate.session, candidate.selectedFactionId)) {
       return {
-        version: 6,
+        version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
-        session: { ...candidate.session, advisorRelationshipState: createAdvisorRelationshipState() }
+        session: {
+          ...candidate.session,
+          advisorRelationshipState: createAdvisorRelationshipState(),
+          eventDecisionState: createEventDecisionState()
+        }
       };
     }
     if (candidate.version === 4 && isVersionFourSession(candidate.session, candidate.selectedFactionId)) {
       return {
-        version: 6,
+        version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: {
           ...candidate.session,
           interestPressureState: createInterestPressureState(),
-          advisorRelationshipState: createAdvisorRelationshipState()
+          advisorRelationshipState: createAdvisorRelationshipState(),
+          eventDecisionState: createEventDecisionState()
         }
       };
     }
     if (candidate.version === 3 && isVersionThreeSession(candidate.session, candidate.selectedFactionId)) {
       return {
-        version: 6,
+        version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: {
           ...candidate.session,
           strategicActionState: createStrategicActionState(),
           interestPressureState: createInterestPressureState(),
-          advisorRelationshipState: createAdvisorRelationshipState()
+          advisorRelationshipState: createAdvisorRelationshipState(),
+          eventDecisionState: createEventDecisionState()
         }
       };
     }
     if (candidate.version === 2 && isVersionTwoSession(candidate.session, candidate.selectedFactionId)) {
       return {
-        version: 6,
+        version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: {
@@ -233,13 +259,14 @@ const parseSavedGame = (value: string): SavedGame | null => {
           policyLegacyState: createPolicyLegacyState(),
           strategicActionState: createStrategicActionState(),
           interestPressureState: createInterestPressureState(),
-          advisorRelationshipState: createAdvisorRelationshipState()
+          advisorRelationshipState: createAdvisorRelationshipState(),
+          eventDecisionState: createEventDecisionState()
         }
       };
     }
     if (candidate.version === 1 && isGameState(candidate.gameState)) {
       return {
-        version: 6,
+        version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: createGameSession(candidate.gameState, candidate.selectedFactionId)
@@ -273,7 +300,7 @@ export const writeSaveSlot = (
 ): SavedGame | null => {
   if (!Number.isInteger(index) || index < 1 || index > SAVE_SLOT_COUNT) return null;
   const savedGame: SavedGame = {
-    version: 6,
+    version: 7,
     savedAt: now().toISOString(),
     selectedFactionId,
     session
