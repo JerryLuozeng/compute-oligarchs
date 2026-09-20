@@ -5,13 +5,13 @@ import { decodeRegionId, getTileIdForRegion } from "./world-region-map-model";
 import "./world-region-map.css";
 
 const controllerColor: Record<Tile["controllingFaction"], readonly [number, number, number]> = {
-  consortium: [182, 255, 59],
-  sovereign: [255, 77, 46],
-  labor_union: [25, 227, 255],
-  independent_labs: [255, 43, 214],
-  socialist_power: [224, 44, 35],
-  commons: [138, 146, 140],
-  none: [105, 65, 56]
+  consortium: [169, 180, 123],
+  sovereign: [183, 122, 104],
+  labor_union: [125, 165, 170],
+  independent_labs: [168, 135, 156],
+  socialist_power: [181, 104, 104],
+  commons: [128, 133, 126],
+  none: [89, 82, 76]
 };
 
 interface WorldRegionMapProps {
@@ -91,11 +91,10 @@ export function WorldRegionMap({ tiles, selectedTileId, onSelectTile }: WorldReg
           onClick={selectRegion}
         />
         <canvas ref={hitCanvasRef} className="world-region-map__hit-layer" aria-hidden="true" />
-        <span className="world-region-map__reticle" aria-hidden="true" />
       </div>
       <div className="world-region-map__footer">
-        <span>REGION MATRIX / 30</span>
-        <strong>点击地图区域选择生产节点</strong>
+        <span>REGIONAL NETWORK / 30</span>
+        <strong>点击地区读取运行档案</strong>
       </div>
     </div>
   );
