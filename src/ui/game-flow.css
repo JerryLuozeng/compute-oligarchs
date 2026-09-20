@@ -43,7 +43,7 @@
 .flow-eyebrow svg { width: 14px; }
 
 .flow-screen--start { overflow-y: auto; }
-.start-stage { display: grid; min-height: calc(100vh - 154px); place-items: center; padding-block: 48px; }
+.start-stage { display: grid; min-height: calc(100vh - 154px); grid-template-columns: minmax(0, 560px) minmax(230px, 280px); align-items: center; justify-content: center; gap: clamp(42px, 7vw, 96px); padding-block: 48px; }
 .start-stage__copy { position: relative; z-index: 2; width: min(560px, 100%); text-align: center; }
 .start-stage__copy .flow-eyebrow { justify-content: center; }
 .start-stage__copy h1 { position: relative; margin: 27px 0 0; font: 800 112px/0.82 "Bahnschrift", sans-serif; letter-spacing: 0; }
@@ -51,10 +51,15 @@
 .start-stage__english { margin: 22px 0 0; color: #b6ff3b; font: 700 14px/1 "Cascadia Mono", monospace; letter-spacing: 0.32em; }
 .start-stage__statement { max-width: 540px; margin: 35px auto 30px; color: #a5ada7; font-size: 15px; line-height: 1.9; }
 
-.signal-array { position: absolute; top: 50%; right: max(-120px, calc((100vw - 1240px) / 2 - 150px)); display: grid; width: 560px; aspect-ratio: 1; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 62px; border: 1px solid var(--flow-line); opacity: 0.22; transform: translateY(-50%) rotate(-3deg); }
-.signal-array > span { border: 1px solid #19e3ff; background: #19e3ff; animation: signal-pulse 3s steps(3, end) infinite alternate; }
-.signal-array__readout { position: absolute; inset: 25%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #ff4d2e; color: #ff4d2e; background: rgb(11 13 12 / 0.92); font: 600 9px/1.4 "Cascadia Mono", monospace; letter-spacing: 0.12em; text-align: center; transform: rotate(3deg); }
-.signal-array__readout strong { font-size: 92px; line-height: 0.9; }
+.start-brief { align-self: center; border-top: 2px solid #19e3ff; border-bottom: 1px solid var(--flow-line); padding: 17px 0 20px; color: #a5ada7; }
+.start-brief__eyebrow { margin: 0 0 14px; color: #19e3ff; font: 600 9px/1.2 "Cascadia Mono", monospace; letter-spacing: 0.15em; }
+.start-brief > strong { display: block; color: #e5ebe3; font: 700 20px/1.2 "Bahnschrift", sans-serif; }
+.start-brief > p:not(.start-brief__eyebrow) { margin: 13px 0 20px; font-size: 12px; line-height: 1.8; }
+.start-brief dl { display: grid; margin: 0; border-top: 1px solid var(--flow-line); }
+.start-brief dl > div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--flow-line); padding: 10px 0; }
+.start-brief dt, .start-brief dd { margin: 0; font: 10px/1.2 "Cascadia Mono", monospace; }
+.start-brief dt { color: #737c75; }
+.start-brief dd { color: #b6ff3b; }
 .flow-footer { display: flex; min-height: 66px; align-items: center; justify-content: space-between; border-top: 1px solid var(--flow-line); color: #667069; font: 9px/1 "Cascadia Mono", monospace; letter-spacing: 0.15em; }
 
 .start-menu { display: grid; width: min(430px, 100%); gap: 6px; margin-inline: auto; text-align: left; }
@@ -151,7 +156,6 @@
 @keyframes flow-scan { from { transform: translateY(-100%); } to { transform: translateY(700%); } }
 @keyframes flow-noise { 0%, 100% { transform: translate(0); } 50% { transform: translate(1px, -1px); } }
 @keyframes title-slice { 0%, 88%, 100% { transform: translate(0); } 89% { transform: translate(12px, -2px); } 91% { transform: translate(-6px, 2px); } }
-@keyframes signal-pulse { from { filter: brightness(0.7); } to { filter: brightness(1.7); } }
 @keyframes home-dialog-enter { from { opacity: 0; transform: translate(8px, -5px); } to { opacity: 1; transform: translate(0); } }
 
 @media (max-width: 1060px) {
@@ -163,7 +167,9 @@
   .start-stage { min-height: auto; }
   .start-stage__copy h1 { font-size: 92px; }
   .select-heading h1 { font-size: 52px; }
-  .signal-array { right: -180px; width: 460px; }
+  .start-stage { grid-template-columns: 1fr; gap: 38px; }
+  .start-brief { width: min(560px, 100%); order: 2; }
+  .start-stage__copy { order: 1; }
   .select-heading { align-items: start; flex-direction: column; }
 }
 
@@ -175,7 +181,7 @@
   .start-stage__copy h1 { font-size: 64px; }
   .start-stage__statement { font-size: 13px; }
   .start-menu button { min-height: 54px; }
-  .signal-array { display: none; }
+  .start-brief { width: 100%; }
   .home-overlay { place-items: start center; padding: 14px 10px; }
   .home-dialog { max-height: calc(100vh - 28px); }
   .home-dialog__body { padding: 27px 19px; }
