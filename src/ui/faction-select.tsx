@@ -27,9 +27,9 @@ function FactionOption({
       <strong>{faction.name}</strong>
       <span className="select-card__summary">{faction.summary}</span>
       <span className="select-card__divider" />
-      <span className="select-card__label">优势</span>
+      <span className="select-card__label">结构优势</span>
       {faction.strengths.map((strength) => <span className="select-card__trait trait--plus" key={strength}><Plus />{strength}</span>)}
-      <span className="select-card__label">代价</span>
+      <span className="select-card__label">长期风险</span>
       {faction.weaknesses.map((weakness) => <span className="select-card__trait trait--minus" key={weakness}><Minus />{weakness}</span>)}
     </button>
   );
@@ -51,13 +51,13 @@ export function FactionSelect({
       <div className="flow-scanline" aria-hidden="true" />
       <header className="flow-header">
         <button className="flow-back" type="button" onClick={onBack} aria-label="返回开始页面"><ArrowLeft /></button>
-        <span className="flow-brand"><Radio /> FACTION AUTHORIZATION</span>
+        <span className="flow-brand"><Radio /> GOVERNANCE AUTHORIZATION</span>
         <span className="flow-step">01 / 01</span>
       </header>
 
       <section className="select-heading">
-        <div><p className="flow-eyebrow">SELECT CLASS POSITION</p><h1>选择你的势力</h1></div>
-        <p>你选择的不是英雄，而是一组生产关系、资源约束与结构性矛盾。</p>
+        <div><p className="flow-eyebrow">SELECT GOVERNANCE MANDATE</p><h1>选择你的势力</h1></div>
+        <p>每个势力拥有不同的资源优势、治理目标与长期风险。你的选择将决定开局条件和后续决策压力。</p>
       </section>
 
       <section className="select-grid" role="radiogroup" aria-label="可选势力">
@@ -73,7 +73,7 @@ export function FactionSelect({
 
       <footer className="select-confirm">
         <div>
-          <span>{selectedFaction === undefined ? "等待势力授权" : selectedFaction.name}</span>
+          <span>{selectedFaction === undefined ? "等待治理授权" : selectedFaction.name}</span>
           <p>{selectedFaction?.mandate ?? "选择一个势力以读取其行动纲领。"}</p>
         </div>
         <Button
