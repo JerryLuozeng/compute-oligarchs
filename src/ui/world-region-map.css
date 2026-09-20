@@ -3,21 +3,12 @@
   height: 100%;
   min-height: 220px;
   overflow: hidden;
-  border: 1px solid rgb(125 165 170 / 0.32);
+  border: 1px solid var(--terminal-border-strong);
   background:
-    linear-gradient(rgb(25 227 255 / 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(25 227 255 / 0.035) 1px, transparent 1px),
-    #0b1010;
+    linear-gradient(rgb(191 193 184 / 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(191 193 184 / 0.03) 1px, transparent 1px),
+    var(--terminal-bg);
   background-size: 28px 28px;
-}
-
-.world-region-map::before {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 0.12) 3px 4px);
-  content: "";
-  pointer-events: none;
 }
 
 .world-region-map__viewport {
@@ -54,28 +45,6 @@
 
 .world-region-map__hit-layer { display: none; }
 
-.world-region-map__reticle {
-  position: absolute;
-  z-index: 4;
-  top: 12%;
-  right: 8%;
-  width: 18px;
-  height: 18px;
-  border: 1px solid #19e3ff;
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-.world-region-map__reticle::before,
-.world-region-map__reticle::after {
-  position: absolute;
-  background: #19e3ff;
-  content: "";
-}
-
-.world-region-map__reticle::before { top: 8px; left: -7px; width: 30px; height: 1px; }
-.world-region-map__reticle::after { top: -7px; left: 8px; width: 1px; height: 30px; }
-
 .world-region-map__footer {
   position: absolute;
   z-index: 4;
@@ -86,11 +55,11 @@
   align-items: center;
   justify-content: space-between;
   min-height: 38px;
-  border-top: 1px solid rgb(25 227 255 / 0.22);
+  border-top: 1px solid var(--terminal-border);
   padding: 0 14px;
-  background: rgb(4 11 14 / 0.9);
-  color: #19e3ff;
-  font: 9px/1 "Cascadia Mono", monospace;
+  background: rgb(10 11 10 / 0.94);
+  color: var(--status-info);
+  font: 9px/1 var(--font-data);
   letter-spacing: 0.12em;
 }
 

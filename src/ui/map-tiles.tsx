@@ -36,7 +36,21 @@ const collectionModeLabel: Record<Tile["collectionMode"], string> = {
   public_commons: "公共数据公地"
 };
 
-const tileStatus = (tile: Tile): string => tile.modelDrift >= 12 ? "高漂移" : tile.modelDrift >= 8 ? "漂移累积" : "运行中";
+interface TileAssessment {
+  label: string;
+  detail: string;
+  tone: "normal" | "watch" | "critical";
+}
+
+const assessTile = (tile: Tile): TileAssessment => {
+  if (tile.stability < 25 || tile.modelDrift >= 16) {
+    return { label: "系统危机", detail: "运行数据已偏离安全区间", tone: "critical" };
+  }
+  if (tile.stability < 50 || tile.modelDrift >= 8) {
+    return { label: "重点监测", detail: "需要持续核验地区反馈", tone: "watch" };
+  }
+  return { label: "运行正常", detail: "当前数据与社会反馈一致", tone: "normal" };
+};
 
 function TileMetric({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
   return (
@@ -64,7 +78,7 @@ function MapSummary({ tiles }: { tiles: readonly Tile[] }) {
       <div className={`map-summary__item ${summary.unstableTileCount > 0 ? "map-summary__item--alert" : ""}`}>
         <Activity /><span>异常节点</span><strong>{summary.unstableTileCount}/{tiles.length}</strong>
       </div>
-      <p>{summary.occupiedTileCount} 个节点已被占用</p>
+      <p>{summary.occupiedTileCount}/{tiles.length} 个地区已纳入治理网络</p>
     </div>
   );
 }
@@ -77,12 +91,14 @@ export function MapTiles({ tiles }: { tiles: readonly Tile[] }) {
     return null;
   }
 
+  const assessment = assessTile(selectedTile);
+
   return (
     <section className="map-section" aria-label="地块地图">
       <div className="map-section__heading">
         <div>
-          <p className="map-section__eyebrow"><MapPinned /> TERRITORY / GRID 06</p>
-          <h2>生产资料分布</h2>
+          <p className="map-section__eyebrow"><MapPinned /> SOCIAL SYSTEM NETWORK / 06</p>
+          <h2>算力与数据运行网络</h2>
         </div>
         <div className="map-legend" aria-label="势力图例">
           <span><i className="legend-dot legend-dot--consortium" />财团</span>
@@ -104,13 +120,16 @@ export function MapTiles({ tiles }: { tiles: readonly Tile[] }) {
           onSelectTile={setSelectedTileId}
         />
 
-        <aside className={`tile-detail ${controllerTone[selectedTile.controllingFaction]}`} aria-live="polite">
+        <aside className={`tile-detail ${controllerTone[selectedTile.controllingFaction]} tile-detail--${assessment.tone}`} aria-live="polite">
           <div className="tile-detail__topline">
-            <span>SELECTED NODE</span>
-            <span className="tile-detail__status">{tileStatus(selectedTile)}</span>
+            <span>REGIONAL DOSSIER</span>
+            <span className="tile-detail__status"><i />{assessment.label}</span>
           </div>
           <h3>{selectedTile.name}</h3>
-          <p className="tile-detail__controller">{controllerLabel[selectedTile.controllingFaction]} · {collectionModeLabel[selectedTile.collectionMode]}</p>
+          <dl className="tile-detail__governance">
+            <div><dt>管理主体</dt><dd>{controllerLabel[selectedTile.controllingFaction]}</dd></div>
+            <div><dt>数据生产</dt><dd>{collectionModeLabel[selectedTile.collectionMode]}</dd></div>
+          </dl>
           <div className="tile-detail__metrics">
             <TileMetric icon={<Cpu />} label="算力产出" value={selectedTile.computeOutput} />
             <TileMetric icon={<Database />} label="数据产出" value={selectedTile.dataOutput} />
@@ -121,16 +140,17 @@ export function MapTiles({ tiles }: { tiles: readonly Tile[] }) {
             <strong>{selectedTile.stability.toFixed(1)}</strong>
             <span className="tile-detail__stability-track"><i style={{ width: `${Math.min(100, Math.max(0, selectedTile.stability))}%` }} /></span>
           </div>
+          <p className="tile-detail__assessment">{assessment.detail}</p>
         </aside>
       </div>
 
-      <div className="tile-grid" role="grid" aria-label="生产节点列表">
+      <div className="tile-grid" role="grid" aria-label="地区运行索引">
         {tiles.map((tile, index) => {
           const controller = tile.controllingFaction;
           const isSelected = tile.id === selectedTile.id;
           return (
             <button
-              className={`map-tile ${controllerTone[controller]} ${isSelected ? "map-tile--selected" : ""} ${tile.modelDrift >= 12 ? "map-tile--unstable" : ""}`}
+              className={`map-tile ${controllerTone[controller]} map-tile--${assessTile(tile).tone} ${isSelected ? "map-tile--selected" : ""}`}
               type="button"
               role="gridcell"
               aria-label={`${tile.name}，${controllerLabel[controller]}，算力 ${tile.computeOutput.toFixed(1)}，数据 ${tile.dataOutput.toFixed(1)}，漂移 ${tile.modelDrift.toFixed(1)}`}
