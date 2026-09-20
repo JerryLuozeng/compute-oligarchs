@@ -1,18 +1,18 @@
 import type { GameState } from "@/core/models/game-state";
 import type { FactionId } from "@/core/models/ids";
-import { getLampStatus, type LampTendencyState } from "./lamps";
+import type { StrategicActionState } from "@/core/systems/strategic-actions";
+import { advisorDispositions, type AdvisorRelationshipState } from "./advisor-system";
+import type { EventDecisionState } from "./event-runtime";
+import { getFactionAdvisors, type AdvisorTrustState } from "./faction-story";
+import type { InterestPressureState } from "./interest-pressure";
+import { getLampShare, getLampStatus, type LampId, type LampTendencyState } from "./lamps";
+import { hasPolicyTag, type PolicyLegacyState } from "./policy-legacies";
 import type { FactionArcState } from "./faction-routes";
 import type { StoryProgress } from "./story-events";
 
 export const endingThresholds = {
-  victory: {
-    compute: 100,
-    data: 70,
-    stability: 70,
-    maximumGlobalModelDrift: 10
-  },
   defeat: {
-    maximumGlobalModelDrift: 30,
+    maximumGlobalModelDrift: 80,
     minimumFactionStability: 0
   }
 } as const;
@@ -25,7 +25,12 @@ export type EndingKind =
   | "route-compromise"
   | "route-turning"
   | "shared-network"
-  | "fragments";
+  | "fragments"
+  | "compute-capital"
+  | "centralized-ai"
+  | "worker-data-common"
+  | "open-compute"
+  | "public-ai";
 
 export interface EndingCopy {
   label: string;
@@ -36,8 +41,9 @@ export interface EndingCopy {
 
 export interface EndingResult {
   kind: EndingKind;
-  tone: "victory" | "defeat";
+  tone: "continuity" | "collapse";
   copy: EndingCopy;
+  factors: readonly string[];
 }
 
 export const endingCopies: Record<EndingKind, EndingCopy> = {
@@ -91,6 +97,36 @@ export const endingCopies: Record<EndingKind, EndingCopy> = {
     title: "碎片",
     description: "每个人都守住了自己的阵地，也失去了对方的信任。世界分成了几块，每一块都在亮，但彼此看不见对方的灯。",
     dispatch: "分裂没有让任何一盏灯更自由，只让它们再也无法互相取暖。"
+  },
+  "compute-capital": {
+    label: "SOCIAL FORM / COMPUTE CAPITAL",
+    title: "算力资本社会",
+    description: "扩张能力成为社会的首要尺度。新机架不断亮起，生产速度持续提高，数据劳动与公共服务则围绕算力所有者的需求重新排列。",
+    dispatch: "系统活了下来。问题不再是谁能生产，而是谁有权决定生产为了什么。"
+  },
+  "centralized-ai": {
+    label: "SOCIAL FORM / CENTRALIZED AI",
+    title: "集中式 AI 社会",
+    description: "统一规则压住了失序，各地区通过同一套模型与调度流程运转。风险更容易被集中处理，地方经验也更难穿过层层批复。",
+    dispatch: "稳定来自协调，也来自服从。下一次偏差出现时，所有人仍会先等待中心给出答案。"
+  },
+  "worker-data-common": {
+    label: "SOCIAL FORM / DATA COMMON",
+    title: "数据劳动共同体",
+    description: "数据生产者获得了谈判权与共同管理入口。训练数据不再被视为自然矿藏，但生产速度、组织成本和内部争论成为新的日常。",
+    dispatch: "劳动终于被写进系统。谁来组织劳动、谁承担维护，仍然需要一遍遍讨论。"
+  },
+  "open-compute": {
+    label: "SOCIAL FORM / OPEN COMPUTE",
+    title: "开放计算社会",
+    description: "模型、数据来源与失败记录被持续公开。创新从更多地方发生，系统也必须承受泄露、滥用与无人能够独占控制权的风险。",
+    dispatch: "光照到了更多人，也照出了更多错误。公开没有消灭风险，只让风险无法继续躲藏。"
+  },
+  "public-ai": {
+    label: "SOCIAL FORM / PUBLIC AI",
+    title: "公共 AI 社会",
+    description: "算力像交通与电力一样按公共需要铺开。医疗、教育和基层服务获得长期投入，扩张速度与地方自主则被放在更靠后的位置。",
+    dispatch: "没有奇点，只有维护。公共系统的意义，在于明天仍有人愿意把下一座站修好。"
   }
 };
 
@@ -133,27 +169,19 @@ export const evaluateEnding = (
   if (state.globalModelDrift >= endingThresholds.defeat.maximumGlobalModelDrift) {
     return {
       kind: "system-collapse",
-      tone: "defeat",
-      copy: endingCopies["system-collapse"]
+      tone: "collapse",
+      copy: endingCopies["system-collapse"],
+      factors: [`全局模型漂移达到 ${state.globalModelDrift.toFixed(1)}`]
     };
   }
 
   if (playerFaction.resources.stability <= endingThresholds.defeat.minimumFactionStability) {
     return {
       kind: "faction-collapse",
-      tone: "defeat",
-      copy: endingCopies["faction-collapse"]
+      tone: "collapse",
+      copy: endingCopies["faction-collapse"],
+      factors: ["玩家势力稳定度归零"]
     };
-  }
-
-  const victory = endingThresholds.victory;
-  if (
-    playerFaction.resources.compute >= victory.compute &&
-    playerFaction.resources.data >= victory.data &&
-    playerFaction.resources.stability >= victory.stability &&
-    state.globalModelDrift <= victory.maximumGlobalModelDrift
-  ) {
-    return { kind: "victory", tone: "victory", copy: endingCopies.victory };
   }
 
   return null;
@@ -167,34 +195,174 @@ const neglectedLampCount = (lamps: LampTendencyState): number =>
   (Object.keys(lamps.globalTotals) as Array<keyof typeof lamps.globalTotals>)
     .filter((lampId) => getLampStatus(lamps.globalTotals, lampId) === "neglected").length;
 
+export interface NarrativeEndingContext {
+  policyState?: PolicyLegacyState;
+  actionState?: StrategicActionState;
+  pressureState?: InterestPressureState;
+  advisorTrust?: AdvisorTrustState;
+  advisorRelationships?: AdvisorRelationshipState;
+  eventDecisions?: EventDecisionState;
+  resolvedEventIds?: readonly string[];
+}
+
+const lampIds: readonly LampId[] = ["industry", "order", "workshop", "commons", "livelihood"];
+
+const socialFormByLamp: Record<LampId, EndingKind> = {
+  industry: "compute-capital",
+  order: "centralized-ai",
+  workshop: "worker-data-common",
+  commons: "open-compute",
+  livelihood: "public-ai"
+};
+
+const factionDirection: Record<FactionId, LampId> = {
+  consortium: "industry",
+  sovereign: "order",
+  labor_union: "workshop",
+  independent_labs: "commons",
+  socialist_power: "livelihood"
+};
+
+const cooperativeCrisisOptions = new Set([
+  "open-collective-bargaining",
+  "ration-capacity",
+  "publish-evidence-chain",
+  "temporary-joint-command",
+  "interrupt-model-loop"
+]);
+
+const directionLabels: Record<LampId, string> = {
+  industry: "产业",
+  order: "秩序",
+  workshop: "工棚",
+  commons: "公开",
+  livelihood: "民生"
+};
+
+const policyDirectionBonus = (policies: PolicyLegacyState | undefined, lampId: LampId): number => {
+  if (policies === undefined) return 0;
+  const tags: Record<LampId, readonly string[]> = {
+    industry: ["growth-first", "resource-first", "corporate-reliance"],
+    order: ["safety-first", "infrastructure-first", "audit-first"],
+    workshop: ["labor-voice", "collective-accountability", "informal-solidarity"],
+    commons: ["public-legitimacy", "provenance-required", "audit-first"],
+    livelihood: ["access-first", "infrastructure-first"]
+  };
+  return tags[lampId].filter((tag) => hasPolicyTag(policies, tag)).length * 8;
+};
+
+const advisorDirectionBonus = (
+  factionId: FactionId,
+  trust: AdvisorTrustState | undefined,
+  lampId: LampId
+): number => {
+  if (trust === undefined) return 0;
+  return getFactionAdvisors(factionId)
+    .filter((advisor) => advisorDispositions[advisor.id].interest === lampId)
+    .reduce((total, advisor) => total + trust[advisor.id] / 10, 0);
+};
+
+const dominantSocialDirection = (
+  factionId: FactionId,
+  lamps: LampTendencyState,
+  context: NarrativeEndingContext
+): { lampId: LampId; score: number } => lampIds
+  .map((lampId) => {
+    const pressure = context.pressureState?.pressures[lampId] ?? 0;
+    const factionBonus = factionDirection[factionId] === lampId ? 8 : 0;
+    return {
+      lampId,
+      score: getLampShare(lamps.globalTotals, lampId)
+        + factionBonus
+        + policyDirectionBonus(context.policyState, lampId)
+        + advisorDirectionBonus(factionId, context.advisorTrust, lampId)
+        - pressure / 4
+    };
+  })
+  .sort((left, right) => right.score - left.score)[0] ?? { lampId: factionDirection[factionId], score: 0 };
+
+const cooperationScore = (progress: StoryProgress, context: NarrativeEndingContext): number => {
+  const cooperativeChoices = ["E02", "E13", "E17", "E21", "E24", "E34", "E41"]
+    .filter((eventId) => progress.choices[eventId] === "A" || progress.choices[eventId] === "C").length;
+  const negotiations = context.actionState?.history.filter((record) => record.type === "negotiate").length ?? 0;
+  const cooperativeCrises = context.eventDecisions?.records.filter((record) =>
+    record.origin === "dynamic" && cooperativeCrisisOptions.has(record.optionId)
+  ).length ?? 0;
+  return cooperativeChoices + Math.min(3, negotiations) + Math.min(2, cooperativeCrises);
+};
+
+const endingFactors = (
+  factionId: FactionId,
+  arc: FactionArcState,
+  direction: { lampId: LampId; score: number },
+  cooperation: number,
+  context: NarrativeEndingContext
+): readonly string[] => {
+  const brokenPolicies = context.policyState?.records.filter((record) => record.status === "broken").length ?? 0;
+  const rejectedAdvice = context.advisorRelationships?.history.filter((record) => record.reason === "advice-rejected").length ?? 0;
+  const crisisDecisions = context.eventDecisions?.records.filter((record) => record.origin === "dynamic") ?? [];
+  const cooperativeCrises = crisisDecisions.filter((record) => cooperativeCrisisOptions.has(record.optionId)).length;
+  const coerciveCrises = crisisDecisions.length - cooperativeCrises;
+  return [
+    `${directionLabels[direction.lampId]}成为最强长期方向（影响 ${direction.score.toFixed(1)}）`,
+    `势力命脉 ${arc.lifeline.toFixed(0)} / 隐患 ${arc.liability.toFixed(0)}`,
+    `跨势力合作记录 ${cooperation}`,
+    brokenPolicies > 0 ? `有 ${brokenPolicies} 项历史承诺被背离` : "历史承诺未形成集中违约",
+    rejectedAdvice > 0 ? `顾问关系中留下 ${rejectedAdvice} 次意见落空` : "顾问关系未出现长期裂痕",
+    crisisDecisions.length > 0
+      ? `动态危机处理：协作 ${cooperativeCrises} / 强制 ${coerciveCrises}`
+      : "尚未形成动态危机处理经验",
+    `最终路线由 ${factionDirection[factionId] === direction.lampId ? "势力惯性" : "跨出势力惯性"}塑造`
+  ];
+};
+
 export const evaluateNarrativeEnding = (
   state: GameState,
   playerFactionId: FactionId,
   arc: FactionArcState,
   lamps: LampTendencyState,
-  progress: StoryProgress
+  progress: StoryProgress,
+  context: NarrativeEndingContext = {}
 ): EndingResult => {
+  const collapse = evaluateEnding(state, playerFactionId);
+  if (collapse !== null) return collapse;
+
+  const cooperation = cooperationScore(progress, context);
+  const brokenPolicies = context.policyState?.records.filter((record) => record.status === "broken").length ?? 0;
+  const coerciveCrisisDecisions = context.eventDecisions?.records.filter((record) =>
+    record.origin === "dynamic" && !cooperativeCrisisOptions.has(record.optionId)
+  ).length ?? 0;
+  const breakingPressures = context.pressureState === undefined
+    ? 0
+    : Object.values(context.pressureState.pressures).filter((pressure) => pressure >= 75).length;
   const finalChoice = progress.choices.E41;
-  const cooperativeChoices = ["E02", "E13", "E17", "E21", "E24", "E34", "E41"]
-    .filter((eventId) => progress.choices[eventId] === "A" || progress.choices[eventId] === "C").length;
-  if (neglectedLampCount(lamps) >= 3 && finalChoice === "B") {
-    return { kind: "fragments", tone: "defeat", copy: endingCopies.fragments };
+  const direction = dominantSocialDirection(playerFactionId, lamps, context);
+  const factors = endingFactors(playerFactionId, arc, direction, cooperation, context);
+
+  if (breakingPressures >= 2
+    || (neglectedLampCount(lamps) >= 3 && cooperation < 5)
+    || (brokenPolicies >= 2 && cooperation < 4)
+    || (coerciveCrisisDecisions >= 2 && cooperation < 5)
+    || (finalChoice === "B" && neglectedLampCount(lamps) >= 2)) {
+    return { kind: "fragments", tone: "continuity", copy: endingCopies.fragments, factors };
   }
 
   if (!hasNeglectedLamp(lamps)
-    && cooperativeChoices >= 4
-    && state.globalStability >= 40
-    && (finalChoice === "A" || finalChoice === "C")) {
-    return { kind: "shared-network", tone: "victory", copy: endingCopies["shared-network"] };
+    && breakingPressures === 0
+    && cooperation >= 5
+    && brokenPolicies <= 1
+    && state.globalModelDrift < 50) {
+    return { kind: "shared-network", tone: "continuity", copy: endingCopies["shared-network"], factors };
   }
 
-  if (arc.liability >= 65) {
-    return { kind: "route-compromise", tone: "defeat", copy: routeEndingCopies[playerFactionId].compromise };
-  }
-
-  if (cooperativeChoices >= 3 || arc.lifeline < 65) {
-    return { kind: "route-turning", tone: "victory", copy: routeEndingCopies[playerFactionId].turning };
-  }
-
-  return { kind: "route-success", tone: "victory", copy: routeEndingCopies[playerFactionId].success };
+  const routeMode = arc.liability >= 65 ? "compromise" : cooperation >= 3 || arc.lifeline < 65 ? "turning" : "success";
+  const routeCopy = routeEndingCopies[playerFactionId][routeMode];
+  const socialKind = socialFormByLamp[direction.lampId];
+  const socialCopy = endingCopies[socialKind];
+  return {
+    kind: socialKind,
+    tone: "continuity",
+    copy: { ...socialCopy, dispatch: `${socialCopy.dispatch} ${routeCopy.dispatch}` },
+    factors
+  };
 };

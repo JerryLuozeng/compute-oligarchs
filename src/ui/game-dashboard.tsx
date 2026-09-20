@@ -3,6 +3,7 @@ import {
   Activity,
   BookOpen,
   ChevronRight,
+  Crosshair,
   Cpu,
   Database,
   FolderClock,
@@ -21,19 +22,31 @@ import type { GameState } from "@/core/models/game-state";
 import type { FactionId } from "@/core/models/ids";
 import { tick } from "@/core/systems/tick";
 import {
+  beginStrategicActionPhase,
+  executeStrategicAction,
+  finishStrategicActionPhase,
+  type StrategicAction
+} from "@/core/systems/strategic-actions";
+import {
+  createEventDecisionState,
   findTriggeredEvent,
+  recordEventDecision,
   type RuntimeGameEvent,
   type RuntimeGameEventOption
 } from "@/content/event-runtime";
+import { findTriggeredDynamicCrisis } from "@/content/dynamic-crises";
 import { evaluateEnding, evaluateNarrativeEnding, type EndingResult } from "@/content/endings";
 import { createChapterSettlement, type ChapterSettlement } from "@/content/chapter-settlements";
 import { getFactionProfile } from "@/content/factions";
 import { applyFactionArcChange, factionRoutes } from "@/content/faction-routes";
 import {
-  applyAdvisorTrust,
   getFactionAdvisors,
   getStoryPerspective
 } from "@/content/faction-story";
+import {
+  createAdvisorBriefings,
+  resolveAdvisorDecision
+} from "@/content/advisor-system";
 import {
   advanceStoryChapter,
   findNextStoryEvent,
@@ -43,6 +56,16 @@ import {
   type StoryChoice,
   type StoryEvent
 } from "@/content/story-events";
+import {
+  applyPolicyChoice,
+  getPolicyChoiceNotice,
+  getPolicyLegacyEcho
+} from "@/content/policy-legacies";
+import { strategicActionFeedback } from "@/content/strategic-actions";
+import {
+  settleInterestPressures,
+  type InterestSettlement
+} from "@/content/interest-pressure";
 import {
   beginLampChapter,
   recordLampAllocation,
@@ -63,8 +86,11 @@ import {
   type SaveSlot
 } from "./save-slots";
 import { StoryDialog } from "./story-dialog";
+import { StrategicActionsDialog } from "./strategic-actions-dialog";
+import { SocialFeedbackDialog } from "./social-feedback-dialog";
 import { getTimeCoordinate } from "./time-flow";
 import { TutorialOverlay } from "./tutorial-overlay";
+import { TrajectoryDialog } from "./trajectory-dialog";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
 import "./game-dashboard.css";
 
@@ -142,6 +168,7 @@ export function GameDashboard({
   const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(
     () => new Set(startingSession.resolvedEventIds)
   );
+  const [eventDecisionState, setEventDecisionState] = useState(startingSession.eventDecisionState);
   const [ending, setEnding] = useState<EndingResult | null>(null);
   const [tutorialOpen, setTutorialOpen] = useState(
     () => initialSession === undefined && !isTutorialComplete(window.localStorage)
@@ -152,12 +179,22 @@ export function GameDashboard({
   );
   const [arcState, setArcState] = useState(startingSession.arcState);
   const [advisorTrust, setAdvisorTrust] = useState(startingSession.advisorTrust);
+  const [advisorRelationshipState, setAdvisorRelationshipState] = useState(startingSession.advisorRelationshipState);
   const [storyProgress, setStoryProgress] = useState(startingSession.storyProgress);
+  const [policyLegacyState, setPolicyLegacyState] = useState(startingSession.policyLegacyState);
+  const [strategicActionState, setStrategicActionState] = useState(startingSession.strategicActionState);
+  const [strategicActionsOpen, setStrategicActionsOpen] = useState(
+    startingSession.strategicActionState.status === "active"
+  );
+  const [strategicActionStatus, setStrategicActionStatus] = useState("");
+  const [interestPressureState, setInterestPressureState] = useState(startingSession.interestPressureState);
+  const [socialFeedback, setSocialFeedback] = useState<InterestSettlement | null>(null);
   const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
   const [settlement, setSettlement] = useState<ChapterSettlement | null>(null);
   const [saveSlots, setSaveSlots] = useState<readonly SaveSlot[] | null>(null);
   const [saveStatus, setSaveStatus] = useState("");
+  const [trajectoryOpen, setTrajectoryOpen] = useState(false);
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
   const selectedRoute = factionRoutes[selectedFactionId];
@@ -170,14 +207,39 @@ export function GameDashboard({
     || activeStory !== null
     || ending !== null
     || settlement !== null
+    || socialFeedback !== null
+    || strategicActionState.status === "active"
     || lampState.chapterAllocationCount === 0;
+
+  const queueChapterSettlement = (state: GameState) => {
+    if (!isStoryComplete(storyProgress, lampState, selectedFactionId, state)
+      && findNextStoryEvent(storyProgress, lampState, selectedFactionId, state) === undefined) {
+      setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
+    }
+  };
 
   const resolveTimeConsequences = (state: GameState) => {
     const nextEnding = evaluateEnding(state, selectedFactionId);
+    const nextEvent = nextEnding === null
+      ? findTriggeredDynamicCrisis({
+          gameState: state,
+          playerFactionId: selectedFactionId,
+          pressureState: interestPressureState,
+          actionState: strategicActionState,
+          policyState: policyLegacyState,
+          advisorTrust,
+          advisorRelationships: advisorRelationshipState
+        }, resolvedEventIds) ?? findTriggeredEvent(state, resolvedEventIds) ?? null
+      : null;
     setEnding(nextEnding);
-    setActiveEvent(nextEnding === null
-      ? findTriggeredEvent(state, resolvedEventIds) ?? null
-      : null);
+    setActiveEvent(nextEvent);
+    if (nextEnding === null && nextEvent === null) queueChapterSettlement(state);
+  };
+
+  const beginActions = (turn: number) => {
+    setStrategicActionState((current) => beginStrategicActionPhase(current, turn));
+    setStrategicActionStatus("本季度有 3 个行动点。选择行动，或主动结束行动阶段。");
+    setStrategicActionsOpen(true);
   };
 
   const advanceTime = () => {
@@ -200,7 +262,7 @@ export function GameDashboard({
       return;
     }
 
-    resolveTimeConsequences(nextState);
+    beginActions(nextState.turn);
   };
 
   const resolveEvent = (option: RuntimeGameEventOption) => {
@@ -208,9 +270,12 @@ export function GameDashboard({
 
     const nextState = option.effect(gameState);
     setGameState(nextState);
+    setEventDecisionState((current) => recordEventDecision(current, activeEvent, option, gameState.turn));
     setResolvedEventIds((currentIds) => new Set(currentIds).add(activeEvent.id));
     setActiveEvent(null);
-    setEnding(evaluateEnding(nextState, selectedFactionId));
+    const nextEnding = evaluateEnding(nextState, selectedFactionId);
+    setEnding(nextEnding);
+    if (nextEnding === null) queueChapterSettlement(nextState);
   };
 
   const restartGame = () => {
@@ -218,16 +283,25 @@ export function GameDashboard({
     setGameState(freshSession.gameState);
     setActiveEvent(null);
     setResolvedEventIds(new Set());
+    setEventDecisionState(createEventDecisionState());
     setEnding(null);
     setLampState(freshSession.lampState);
     setArcState(freshSession.arcState);
     setAdvisorTrust(freshSession.advisorTrust);
+    setAdvisorRelationshipState(freshSession.advisorRelationshipState);
     setStoryProgress(freshSession.storyProgress);
+    setPolicyLegacyState(freshSession.policyLegacyState);
+    setStrategicActionState(freshSession.strategicActionState);
+    setStrategicActionsOpen(false);
+    setStrategicActionStatus("");
+    setInterestPressureState(freshSession.interestPressureState);
+    setSocialFeedback(null);
     setActiveStory(null);
     setStoryChoice(null);
     setSettlement(null);
     setSaveSlots(null);
     setSaveStatus("");
+    setTrajectoryOpen(false);
     setLampOpen(true);
     window.scrollTo({ top: 0, left: 0 });
   };
@@ -237,7 +311,12 @@ export function GameDashboard({
     lampState,
     arcState,
     advisorTrust,
+    advisorRelationshipState,
     storyProgress,
+    policyLegacyState,
+    strategicActionState,
+    interestPressureState,
+    eventDecisionState,
     resolvedEventIds: [...resolvedEventIds]
   });
 
@@ -272,14 +351,39 @@ export function GameDashboard({
     if (activeStory === null || storyChoice !== null) return;
     setStoryProgress((current) => recordStoryChoice(current, activeStory, choice.id));
     setArcState((current) => applyFactionArcChange(current, choice.arcChange ?? {}));
-    setAdvisorTrust((current) => applyAdvisorTrust(current, choice.advisorId));
+    const advisorDecision = resolveAdvisorDecision(
+      advisorTrust,
+      advisorRelationshipState,
+      selectedFactionId,
+      activeStory,
+      choice,
+      gameState.turn
+    );
+    setAdvisorTrust(advisorDecision.trust);
+    setAdvisorRelationshipState(advisorDecision.relationships);
+    setPolicyLegacyState((current) => applyPolicyChoice(current, activeStory.id, choice.id, gameState.turn));
     setStoryChoice(choice);
   };
 
   const continueStory = () => {
     if (activeStory === null || storyChoice === null) return;
     if (activeStory.id === "E41") {
-      const narrativeEnding = evaluateNarrativeEnding(gameState, selectedFactionId, arcState, lampState, storyProgress);
+      const narrativeEnding = evaluateNarrativeEnding(
+        gameState,
+        selectedFactionId,
+        arcState,
+        lampState,
+        storyProgress,
+        {
+          policyState: policyLegacyState,
+          actionState: strategicActionState,
+          pressureState: interestPressureState,
+          advisorTrust,
+          advisorRelationships: advisorRelationshipState,
+          eventDecisions: eventDecisionState,
+          resolvedEventIds: [...resolvedEventIds]
+        }
+      );
       setActiveStory(null);
       setStoryChoice(null);
       setEnding(narrativeEnding);
@@ -293,19 +397,48 @@ export function GameDashboard({
       setEnding(nextEnding);
       return;
     }
+    beginActions(gameState.turn);
+  };
 
-    const nextEvent = findTriggeredEvent(gameState, resolvedEventIds) ?? null;
-    if (nextEvent !== null) {
-      setActiveEvent(nextEvent);
+  const executeAction = (action: StrategicAction) => {
+    const result = executeStrategicAction(gameState, strategicActionState, selectedFactionId, action);
+    if (result.error !== undefined) {
+      const errors = {
+        "phase-inactive": "行动阶段已经结束。",
+        "insufficient-points": "剩余行动点不足。",
+        "invalid-target": "当前目标不适用于这项行动。",
+        "insufficient-resources": "当前资源不足，无法承担这项行动。"
+      } as const;
+      setStrategicActionStatus(errors[result.error]);
       return;
     }
+    setGameState(result.gameState);
+    setStrategicActionState(result.actionState);
+    setStrategicActionStatus(strategicActionFeedback[action.type]);
+  };
 
-    if (findNextStoryEvent(storyProgress, lampState, selectedFactionId, gameState) === undefined) {
-      const nextProgress = advanceStoryChapter(storyProgress, lampState, selectedFactionId, gameState);
-      if (nextProgress !== storyProgress) {
-        setSettlement(createChapterSettlement(storyProgress.chapterIndex, lampState));
-      }
-    }
+  const finishActions = () => {
+    const completedActions = finishStrategicActionPhase(strategicActionState);
+    const interestSettlement = settleInterestPressures(
+      gameState,
+      interestPressureState,
+      lampState,
+      strategicActionState,
+      policyLegacyState
+    );
+    setStrategicActionState(completedActions);
+    setGameState(interestSettlement.gameState);
+    setInterestPressureState(interestSettlement.pressureState);
+    setStrategicActionsOpen(false);
+    setStrategicActionStatus("");
+    setSocialFeedback(interestSettlement);
+  };
+
+  const continueSocialFeedback = () => {
+    if (socialFeedback === null) return;
+    const settledState = socialFeedback.gameState;
+    setSocialFeedback(null);
+    resolveTimeConsequences(settledState);
   };
 
   const continueSettlement = () => {
@@ -412,7 +545,16 @@ export function GameDashboard({
               <span>{storyComplete ? "时间线已进入自由推演" : pendingStory === undefined ? "本章即将结算" : "下一季度将触发剧情"}</span>
               <strong>{storyComplete ? "∞" : pendingStory?.displayCode ?? pendingStory?.id ?? "章末"}</strong>
             </div>
-            <button className="game-action game-action--active" type="button"><Info />态势总览</button>
+            <button className="game-action game-action--active" type="button" onClick={() => setTrajectoryOpen(true)}><Info />态势总览</button>
+            <button
+              className="game-action"
+              type="button"
+              disabled={strategicActionState.status !== "active"}
+              onClick={() => setStrategicActionsOpen(true)}
+            >
+              <Crosshair />主动行动
+              <span>{strategicActionState.status === "active" ? `${strategicActionState.pointsRemaining} AP` : "待剧情"}</span>
+            </button>
             <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
             <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
             <button className="game-action" type="button" onClick={openSaveDialog}><FolderClock />保存进度<span>六档</span></button>
@@ -453,12 +595,38 @@ export function GameDashboard({
         />
       ) : null}
       {activeEvent === null ? null : <EventDialog event={activeEvent} onChoose={resolveEvent} />}
+      {!strategicActionsOpen || strategicActionState.status !== "active" ? null : (
+        <StrategicActionsDialog
+          gameState={gameState}
+          playerFactionId={selectedFactionId}
+          actionState={strategicActionState}
+          feedback={strategicActionStatus}
+          onExecute={executeAction}
+          onFinish={finishActions}
+          onClose={() => setStrategicActionsOpen(false)}
+        />
+      )}
+      {socialFeedback === null ? null : (
+        <SocialFeedbackDialog feedback={socialFeedback.feedback} onContinue={continueSocialFeedback} />
+      )}
       {saveSlots === null ? null : (
         <SaveGameDialog
           slots={saveSlots}
           status={saveStatus}
           onClose={() => setSaveSlots(null)}
           onSave={saveToSlot}
+        />
+      )}
+      {!trajectoryOpen ? null : (
+        <TrajectoryDialog
+          factionId={selectedFactionId}
+          pressures={interestPressureState}
+          policies={policyLegacyState}
+          actions={strategicActionState}
+          advisorTrust={advisorTrust}
+          advisorRelationships={advisorRelationshipState}
+          eventDecisions={eventDecisionState}
+          onClose={() => setTrajectoryOpen(false)}
         />
       )}
       {settlement === null ? null : <ChapterSettlementDialog settlement={settlement} onContinue={continueSettlement} />}
@@ -470,6 +638,18 @@ export function GameDashboard({
           lifelineLabel={selectedRoute.lifeline}
           liabilityLabel={selectedRoute.liability}
           timeLabel={currentTime.label}
+          legacyEcho={getPolicyLegacyEcho(policyLegacyState, activeStory.id)?.description}
+          legacyNotice={storyChoice === null ? undefined : getPolicyChoiceNotice(activeStory.id, storyChoice.id)}
+          advisorBriefings={createAdvisorBriefings(
+            activeStory,
+            selectedFactionId,
+            advisorTrust,
+            advisorRelationshipState,
+            interestPressureState,
+            gameState,
+            policyLegacyState,
+            strategicActionState
+          )}
           onChoose={chooseStory}
           onContinue={continueStory}
         />

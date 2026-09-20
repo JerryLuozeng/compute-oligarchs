@@ -13,11 +13,53 @@ export interface RuntimeGameEventOption extends GameEventOption {
 }
 
 export interface RuntimeGameEvent extends Omit<GameEvent, "trigger" | "options"> {
+  origin?: "configured" | "dynamic";
   trigger: GameEvent["trigger"] & {
     matches: (state: GameState) => boolean;
   };
   options: readonly RuntimeGameEventOption[];
 }
+
+export interface EventDecisionRecord {
+  turn: number;
+  eventId: string;
+  optionId: string;
+  origin: "configured" | "dynamic";
+}
+
+export interface EventDecisionState {
+  records: readonly EventDecisionRecord[];
+}
+
+export const createEventDecisionState = (): EventDecisionState => ({ records: [] });
+
+export const recordEventDecision = (
+  state: EventDecisionState,
+  event: RuntimeGameEvent,
+  option: RuntimeGameEventOption,
+  turn: number
+): EventDecisionState => state.records.some((record) => record.eventId === event.id)
+  ? state
+  : { records: [...state.records, {
+      turn,
+      eventId: event.id,
+      optionId: option.id,
+      origin: event.origin ?? "configured"
+    }] };
+
+export const isEventDecisionState = (value: unknown): value is EventDecisionState => {
+  if (typeof value !== "object" || value === null || !("records" in value) || !Array.isArray(value.records)) {
+    return false;
+  }
+  return value.records.every((record) => {
+    if (typeof record !== "object" || record === null) return false;
+    const candidate = record as Record<string, unknown>;
+    return Number.isInteger(candidate.turn)
+      && typeof candidate.eventId === "string"
+      && typeof candidate.optionId === "string"
+      && (candidate.origin === "configured" || candidate.origin === "dynamic");
+  });
+};
 
 const clamp = (value: number, minimum: number, maximum: number): number =>
   Math.min(maximum, Math.max(minimum, value));
@@ -158,6 +200,7 @@ export const applyEventEffects = (
 
 const createRuntimeEvent = (event: GameEvent): RuntimeGameEvent => ({
   ...event,
+  origin: "configured",
   trigger: {
     ...event.trigger,
     matches: (state) => event.trigger.all.every((condition) => matchesEventCondition(condition, state))

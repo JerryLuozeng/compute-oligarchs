@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { House, RotateCcw, ShieldAlert, Trophy } from "lucide-react";
+import { GitBranch, House, RotateCcw, ShieldAlert } from "lucide-react";
 import type { EndingResult } from "@/content/endings";
 import "./ending-dialog.css";
 
@@ -14,7 +14,7 @@ export function EndingDialog({
 }) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const restartButtonRef = useRef<HTMLButtonElement>(null);
-  const isVictory = ending.tone === "victory";
+  const isCollapse = ending.tone === "collapse";
 
   useEffect(() => {
     restartButtonRef.current?.focus();
@@ -42,17 +42,23 @@ export function EndingDialog({
       >
         <div className="ending-dialog__noise" aria-hidden="true" />
         <header className="ending-dialog__header">
-          <span>{isVictory ? <Trophy /> : <ShieldAlert />}{ending.copy.label}</span>
-          <span>SIMULATION TERMINATED</span>
+          <span>{isCollapse ? <ShieldAlert /> : <GitBranch />}{ending.copy.label}</span>
+          <span>{isCollapse ? "SYSTEM TERMINATED" : "HISTORICAL TRAJECTORY"}</span>
         </header>
 
         <div className="ending-dialog__body">
-          <p>{isVictory ? "结局 / 胜利" : "结局 / 失败"}</p>
+          <p>{isCollapse ? "系统结局 / 崩溃" : "社会形态 / 系统延续"}</p>
           <h2 id="ending-dialog-title" data-text={ending.copy.title}>{ending.copy.title}</h2>
           <p id="ending-dialog-description" className="ending-dialog__description">
             {ending.copy.description}
           </p>
           <blockquote>{ending.copy.dispatch}</blockquote>
+          <div className="ending-dialog__factors" aria-label="历史形成因素">
+            <strong>这条路线如何形成</strong>
+            <ul>
+              {ending.factors.map((factor) => <li key={factor}>{factor}</li>)}
+            </ul>
+          </div>
         </div>
 
         <footer className="ending-dialog__actions">
