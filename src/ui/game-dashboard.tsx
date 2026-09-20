@@ -57,6 +57,10 @@ import {
 } from "@/content/policy-legacies";
 import { strategicActionFeedback } from "@/content/strategic-actions";
 import {
+  settleInterestPressures,
+  type InterestSettlement
+} from "@/content/interest-pressure";
+import {
   beginLampChapter,
   recordLampAllocation,
   type LampAllocation
@@ -77,6 +81,7 @@ import {
 } from "./save-slots";
 import { StoryDialog } from "./story-dialog";
 import { StrategicActionsDialog } from "./strategic-actions-dialog";
+import { SocialFeedbackDialog } from "./social-feedback-dialog";
 import { getTimeCoordinate } from "./time-flow";
 import { TutorialOverlay } from "./tutorial-overlay";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
@@ -173,6 +178,8 @@ export function GameDashboard({
     startingSession.strategicActionState.status === "active"
   );
   const [strategicActionStatus, setStrategicActionStatus] = useState("");
+  const [interestPressureState, setInterestPressureState] = useState(startingSession.interestPressureState);
+  const [socialFeedback, setSocialFeedback] = useState<InterestSettlement | null>(null);
   const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [storyChoice, setStoryChoice] = useState<StoryChoice | null>(null);
   const [settlement, setSettlement] = useState<ChapterSettlement | null>(null);
@@ -190,6 +197,7 @@ export function GameDashboard({
     || activeStory !== null
     || ending !== null
     || settlement !== null
+    || socialFeedback !== null
     || strategicActionState.status === "active"
     || lampState.chapterAllocationCount === 0;
 
@@ -263,6 +271,8 @@ export function GameDashboard({
     setStrategicActionState(freshSession.strategicActionState);
     setStrategicActionsOpen(false);
     setStrategicActionStatus("");
+    setInterestPressureState(freshSession.interestPressureState);
+    setSocialFeedback(null);
     setActiveStory(null);
     setStoryChoice(null);
     setSettlement(null);
@@ -280,6 +290,7 @@ export function GameDashboard({
     storyProgress,
     policyLegacyState,
     strategicActionState,
+    interestPressureState,
     resolvedEventIds: [...resolvedEventIds]
   });
 
@@ -357,10 +368,27 @@ export function GameDashboard({
   };
 
   const finishActions = () => {
-    setStrategicActionState((current) => finishStrategicActionPhase(current));
+    const completedActions = finishStrategicActionPhase(strategicActionState);
+    const interestSettlement = settleInterestPressures(
+      gameState,
+      interestPressureState,
+      lampState,
+      strategicActionState,
+      policyLegacyState
+    );
+    setStrategicActionState(completedActions);
+    setGameState(interestSettlement.gameState);
+    setInterestPressureState(interestSettlement.pressureState);
     setStrategicActionsOpen(false);
     setStrategicActionStatus("");
-    resolveTimeConsequences(gameState);
+    setSocialFeedback(interestSettlement);
+  };
+
+  const continueSocialFeedback = () => {
+    if (socialFeedback === null) return;
+    const settledState = socialFeedback.gameState;
+    setSocialFeedback(null);
+    resolveTimeConsequences(settledState);
   };
 
   const continueSettlement = () => {
@@ -527,6 +555,9 @@ export function GameDashboard({
           onFinish={finishActions}
           onClose={() => setStrategicActionsOpen(false)}
         />
+      )}
+      {socialFeedback === null ? null : (
+        <SocialFeedbackDialog feedback={socialFeedback.feedback} onContinue={continueSocialFeedback} />
       )}
       {saveSlots === null ? null : (
         <SaveGameDialog
