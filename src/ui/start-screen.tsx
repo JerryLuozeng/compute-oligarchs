@@ -35,16 +35,16 @@ export function StartScreen({
       </header>
 
       <section className="start-stage">
-        <div className="signal-array" aria-hidden="true">
-          {Array.from({ length: 30 }, (_, index) => (
-            <span key={index} style={{ opacity: 0.12 + (index % 7) * 0.1 }} />
-          ))}
-          <div className="signal-array__readout">
-            <span>SINGULARITY ETA</span>
-            <strong>18</strong>
-            <span>MONTHS / AUTO-RENEWED</span>
-          </div>
-        </div>
+        <aside className="start-brief" aria-label="系统运行摘要">
+          <p className="start-brief__eyebrow">CURRENT OPERATING BRIEF</p>
+          <strong>社会系统沙盘</strong>
+          <p>从势力授权开始，观察算力、数据与稳定度如何在每个时间节点相互牵动。</p>
+          <dl>
+            <div><dt>核心资源</dt><dd>03 项</dd></div>
+            <div><dt>风险指标</dt><dd>模型漂移</dd></div>
+            <div><dt>推进方式</dt><dd>决策驱动</dd></div>
+          </dl>
+        </aside>
 
         <div className="start-stage__copy">
           <p className="flow-eyebrow"><TriangleAlert /> SYSTEM OWNERSHIP DISPUTE</p>
