@@ -5,11 +5,11 @@
 .story-dialog .event-dialog__body { min-height: 190px; }
 .story-dialog .event-dialog__options:has(button:nth-of-type(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .story-dialog .event-dialog__options button { min-width: 0; }
-.story-dialog__perspective { margin: 18px 0 0; border-left: 2px solid var(--status-info); padding: 8px 11px; color: #9eafad; background: rgb(125 165 170 / 0.05); font: 500 10px/1.55 var(--font-data); }
+.story-dialog__perspective { margin: 18px 0 0; border-left: 5px solid var(--ds-indigo-700); padding: 10px 13px; color: var(--ds-ink-800); background: color-mix(in srgb, var(--ds-indigo-500) 12%, transparent); font: 600 10px/1.55 var(--font-data); }
 .story-dialog__echo { display: flex; align-items: center; gap: 8px; margin: 18px 0 0; color: var(--status-normal); font: 600 10px/1.5 var(--font-data); }
 .story-dialog__echo svg { width: 14px; flex: 0 0 auto; }
-.story-dialog__legacy { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; border: 1px solid color-mix(in srgb, var(--status-watch) 40%, transparent); padding: 9px 11px; color: #c2a078; background: color-mix(in srgb, var(--status-watch) 5%, transparent); font: 600 10px/1.5 var(--font-data); }
-.story-dialog__legacy--recorded { border-color: color-mix(in srgb, var(--status-normal) 40%, transparent); color: var(--status-normal); background: color-mix(in srgb, var(--status-normal) 5%, transparent); }
+.story-dialog__legacy { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; border: 1px solid var(--ds-ochre-600); padding: 9px 11px; color: var(--ds-ink-800); background: color-mix(in srgb, var(--ds-ochre-400) 14%, transparent); font: 700 10px/1.5 var(--font-data); }
+.story-dialog__legacy--recorded { border-color: var(--ds-sage-600); color: var(--ds-ink-800); background: color-mix(in srgb, var(--ds-sage-400) 14%, transparent); }
 .story-dialog__legacy svg { width: 14px; height: 14px; flex: 0 0 auto; }
 .story-dialog__briefings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 14px -22px -20px; border-top: 1px solid rgb(138 146 140 / 0.2); background: rgb(138 146 140 / 0.2); }
 .story-dialog__briefings article { padding: 14px 22px; background: var(--terminal-bg); }

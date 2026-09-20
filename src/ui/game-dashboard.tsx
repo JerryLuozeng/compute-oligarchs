@@ -103,18 +103,20 @@ const factionTone: Record<Faction["id"], string> = {
 
 const resourceBar = (value: number): number => Math.min(100, Math.max(0, value));
 
-const getDriftLevel = (drift: number): "normal" | "watch" | "warning" | "critical" => {
-  if (drift >= 80) return "critical";
-  if (drift >= 60) return "warning";
-  if (drift >= 40) return "watch";
-  return "normal";
+const getDriftLevel = (drift: number): "stable" | "trace" | "unstable" | "severe" | "critical" => {
+  if (drift >= 90) return "critical";
+  if (drift >= 70) return "severe";
+  if (drift >= 50) return "unstable";
+  if (drift >= 30) return "trace";
+  return "stable";
 };
 
 const driftStatusLabels: Record<ReturnType<typeof getDriftLevel>, string> = {
-  normal: "安全",
-  watch: "监测",
-  warning: "偏离",
-  critical: "危机"
+  stable: "校准正常",
+  trace: "轻微偏移",
+  unstable: "预测异常",
+  severe: "现实冲突",
+  critical: "系统失真"
 };
 
 const getStabilityStatus = (stability: number): { label: string; detail: string } => {
@@ -183,7 +185,7 @@ export function GameDashboard({
 }) {
   const startingSession = initialSession ?? createGameSession(initialGameState, selectedFactionId);
   const [gameState, setGameState] = useState<GameState>(startingSession.gameState);
-  const [glitchEnabled, setGlitchEnabled] = useState(true);
+  const [motionEnabled, setMotionEnabled] = useState(true);
   const [activeEvent, setActiveEvent] = useState<RuntimeGameEvent | null>(null);
   const [resolvedEventIds, setResolvedEventIds] = useState<ReadonlySet<string>>(
     () => new Set(startingSession.resolvedEventIds)
@@ -472,7 +474,7 @@ export function GameDashboard({
   };
 
   return (
-    <main className={`dashboard-shell drift-${driftLevel} ${glitchEnabled ? "glitch-enabled" : ""}`}>
+    <main className={`dashboard-shell drift-${driftLevel} ${motionEnabled ? "motion-enabled" : "motion-reduced"}`}>
       <div className="dashboard-noise" aria-hidden="true" />
       <div className="dashboard-scanline" aria-hidden="true" />
 
@@ -497,7 +499,7 @@ export function GameDashboard({
           </div>
           <div
             className="command-readout command-readout--drift"
-            title="40 进入监测，60 明显偏离，80 触发系统性危机"
+            title="30 轻微偏移，50 预测异常，70 现实冲突，90 系统失真"
           >
             <span><TriangleAlert /> 模型漂移</span>
             <strong>{gameState.globalModelDrift.toFixed(1)}</strong>
@@ -510,10 +512,10 @@ export function GameDashboard({
           <button
             className="glitch-switch"
             type="button"
-            aria-pressed={glitchEnabled}
-            onClick={() => setGlitchEnabled((enabled) => !enabled)}
+            aria-pressed={motionEnabled}
+            onClick={() => setMotionEnabled((enabled) => !enabled)}
           >
-            SIGNAL FX {glitchEnabled ? "ON" : "OFF"}
+            动态效果 {motionEnabled ? "完整" : "精简"}
           </button>
         </div>
       </header>
