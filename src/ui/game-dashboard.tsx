@@ -110,6 +110,20 @@ const getDriftLevel = (drift: number): "normal" | "watch" | "warning" | "critica
   return "normal";
 };
 
+const driftStatusLabels: Record<ReturnType<typeof getDriftLevel>, string> = {
+  normal: "安全",
+  watch: "监测",
+  warning: "偏离",
+  critical: "危机"
+};
+
+const getStabilityStatus = (stability: number): { label: string; detail: string } => {
+  if (stability < 25) return { label: "系统危机", detail: "低于 25：系统接近资源崩塌" };
+  if (stability < 45) return { label: "持续承压", detail: "低于 45：动态危机风险上升" };
+  if (stability < 60) return { label: "运行稳定", detail: "达到 60 后可获得高稳定度生产增益" };
+  return { label: "生产增益", detail: "60 以上：高稳定度提升数据产出" };
+};
+
 function ResourceLine({
   icon,
   label,
@@ -209,6 +223,8 @@ export function GameDashboard({
   const factionAdvisors = getFactionAdvisors(selectedFactionId);
   const currentTime = getTimeCoordinate(gameState.turn);
   const nextTime = getTimeCoordinate(gameState.turn + 1);
+  const driftLevel = getDriftLevel(gameState.globalModelDrift);
+  const stabilityStatus = getStabilityStatus(gameState.globalStability);
   const timeAdvanceBlocked = activeEvent !== null
     || activeStory !== null
     || ending !== null
@@ -456,7 +472,7 @@ export function GameDashboard({
   };
 
   return (
-    <main className={`dashboard-shell drift-${getDriftLevel(gameState.globalModelDrift)} ${glitchEnabled ? "glitch-enabled" : ""}`}>
+    <main className={`dashboard-shell drift-${driftLevel} ${glitchEnabled ? "glitch-enabled" : ""}`}>
       <div className="dashboard-noise" aria-hidden="true" />
       <div className="dashboard-scanline" aria-hidden="true" />
 
@@ -474,13 +490,18 @@ export function GameDashboard({
           <small>{getStoryChapter(storyProgress)} / {selectedRoute.title}</small>
         </div>
         <div className="command-readouts" data-tutorial="global-status">
-          <div className="command-readout command-readout--stability">
+          <div className="command-readout command-readout--stability" title={stabilityStatus.detail}>
             <span>全局稳定度</span>
             <strong>{gameState.globalStability.toFixed(1)}</strong>
+            <small>{stabilityStatus.label}</small>
           </div>
-          <div className="command-readout command-readout--drift">
+          <div
+            className="command-readout command-readout--drift"
+            title="40 进入监测，60 明显偏离，80 触发系统性危机"
+          >
             <span><TriangleAlert /> 模型漂移</span>
             <strong>{gameState.globalModelDrift.toFixed(1)}</strong>
+            <small>{driftStatusLabels[driftLevel]}</small>
           </div>
         </div>
         <div className="header-status">
