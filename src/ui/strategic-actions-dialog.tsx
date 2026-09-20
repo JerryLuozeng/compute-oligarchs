@@ -39,6 +39,13 @@ export function StrategicActionsDialog({
     ?? strategicActionDefinitions[0];
   const canExecute = actionState.pointsRemaining >= definition.cost;
   const currentRecords = actionState.history.filter((record) => record.turn === actionState.turn);
+  const selectedTile = gameState.tiles.find((tile) => tile.id === tileId);
+  const selectedFaction = gameState.factions.find((faction) => faction.id === factionId);
+
+  const getTargetName = (type: StrategicActionType, targetId: TileId | FactionId): string => {
+    if (type === "negotiate") return getFactionProfile(targetId as FactionId).name;
+    return gameState.tiles.find((tile) => tile.id === targetId)?.name ?? targetId;
+  };
 
   const execute = () => {
     onExecute(definition.target === "tile"
@@ -51,7 +58,7 @@ export function StrategicActionsDialog({
       <section className="strategic-actions-dialog" role="dialog" aria-modal="true" aria-labelledby="strategic-actions-title">
         <header className="strategic-actions-dialog__header">
           <span><Crosshair /> ACTIVE OPERATIONS</span>
-          <strong><Gauge /> {actionState.pointsRemaining} AP</strong>
+          <strong><Gauge /> {actionState.pointsRemaining} 行动点</strong>
           <button type="button" onClick={onClose} aria-label="暂时关闭行动面板"><X /></button>
         </header>
 
@@ -63,6 +70,7 @@ export function StrategicActionsDialog({
 
         <div className="strategic-actions-dialog__layout">
           <div className="strategic-actions-dialog__list" role="radiogroup" aria-label="可用行动">
+            <h3>选择行动</h3>
             {strategicActionDefinitions.map((action) => (
               <button
                 type="button"
@@ -72,7 +80,7 @@ export function StrategicActionsDialog({
                 onClick={() => setSelectedType(action.type)}
                 key={action.type}
               >
-                <span>{action.cost} AP</span>
+                <span>{action.cost} 行动点</span>
                 <strong>{action.name}</strong>
                 <small>{action.description}</small>
               </button>
@@ -80,6 +88,7 @@ export function StrategicActionsDialog({
           </div>
 
           <div className="strategic-actions-dialog__detail">
+            <h3>目标与代价</h3>
             <p className="strategic-actions-dialog__tradeoff"><Activity /> {definition.tradeoff}</p>
             <label>
               <span>{definition.target === "tile" ? "目标地区" : "协商对象"}</span>
@@ -95,8 +104,22 @@ export function StrategicActionsDialog({
                 </select>
               )}
             </label>
+            {definition.target === "tile" && selectedTile !== undefined ? (
+              <dl className="strategic-actions-dialog__target" aria-label={`${selectedTile.name}当前状态`}>
+                <div><dt>算力产出</dt><dd>{selectedTile.computeOutput.toFixed(1)}</dd></div>
+                <div><dt>数据产出</dt><dd>{selectedTile.dataOutput.toFixed(1)}</dd></div>
+                <div><dt>稳定度</dt><dd>{selectedTile.stability.toFixed(1)}</dd></div>
+                <div><dt>模型漂移</dt><dd>{selectedTile.modelDrift.toFixed(1)}</dd></div>
+              </dl>
+            ) : selectedFaction === undefined ? null : (
+              <dl className="strategic-actions-dialog__target" aria-label={`${getFactionProfile(selectedFaction.id).name}当前资源`}>
+                <div><dt>算力</dt><dd>{selectedFaction.resources.compute.toFixed(1)}</dd></div>
+                <div><dt>数据</dt><dd>{selectedFaction.resources.data.toFixed(1)}</dd></div>
+                <div><dt>稳定度</dt><dd>{selectedFaction.resources.stability.toFixed(1)}</dd></div>
+              </dl>
+            )}
             <button className="strategic-actions-dialog__execute" type="button" disabled={!canExecute} onClick={execute}>
-              执行{definition.name} <ArrowRight />
+              {canExecute ? `执行${definition.name}` : "行动点不足"} <ArrowRight />
             </button>
             <div className="strategic-actions-dialog__feedback" aria-live="polite">
               {feedback || "等待行动指令。没有任何方案是免费的。"}
@@ -104,7 +127,10 @@ export function StrategicActionsDialog({
             <div className="strategic-actions-dialog__history">
               <span>本季度记录</span>
               {currentRecords.length === 0 ? <p>尚未执行行动</p> : currentRecords.map((record) => (
-                <p key={record.id}>{record.type.toUpperCase()} / {record.targetId}</p>
+                <p key={record.id}>
+                  <strong>{strategicActionDefinitions.find((action) => action.type === record.type)?.name ?? record.type}</strong>
+                  <span>{getTargetName(record.type, record.targetId)}</span>
+                </p>
               ))}
             </div>
           </div>
@@ -112,7 +138,7 @@ export function StrategicActionsDialog({
 
         <footer>
           <span>结束后将结算社会反馈与动态事件。</span>
-          <button type="button" onClick={onFinish}>结束行动阶段</button>
+          <button type="button" onClick={onFinish}>完成本季度行动</button>
         </footer>
       </section>
     </div>
