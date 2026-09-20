@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from "react";
 import {
-  Activity,
   BookOpen,
   ChevronRight,
   Crosshair,
@@ -458,14 +457,28 @@ export function GameDashboard({
         <div className="brand-lockup">
           <div className="brand-mark" aria-hidden="true"><Radio /></div>
           <div>
-            <p className="eyebrow">COMPUTE ERA / CE 41</p>
+            <p className="eyebrow">NATIONAL COMPUTE GOVERNANCE</p>
             <h1>算力寡头</h1>
+          </div>
+        </div>
+        <div className="command-context">
+          <span>时间坐标</span>
+          <strong data-testid="turn-number">{currentTime.compactLabel}</strong>
+          <small>{getStoryChapter(storyProgress)} / {selectedRoute.title}</small>
+        </div>
+        <div className="command-readouts" data-tutorial="global-status">
+          <div className="command-readout command-readout--stability">
+            <span>全局稳定度</span>
+            <strong>{gameState.globalStability.toFixed(1)}</strong>
+          </div>
+          <div className="command-readout command-readout--drift">
+            <span><TriangleAlert /> 模型漂移</span>
+            <strong>{gameState.globalModelDrift.toFixed(1)}</strong>
           </div>
         </div>
         <div className="header-status">
           <span className="status-dot" aria-hidden="true" />
-          <span>{selectedProfile.name} / 在线</span>
-          <span className="header-divider" aria-hidden="true" />
+          <span>{selectedProfile.name}</span>
           <button
             className="glitch-switch"
             type="button"
@@ -476,26 +489,6 @@ export function GameDashboard({
           </button>
         </div>
       </header>
-
-      <section className="dashboard-intro dashboard-intro--compact">
-        <div>
-          <p className="eyebrow eyebrow--alert"><Activity /> QUARTERLY STATE REPORT</p>
-          <p className="story-chapter-label">{getStoryChapter(storyProgress)} / {selectedRoute.title}</p>
-          <p className="turn-display" data-testid="turn-number">
-            <span>时间坐标</span> {currentTime.compactLabel}
-          </p>
-          <h2 className="dashboard-title glitch-target">生产资料争夺战</h2>
-          <p className="dashboard-subtitle">算力是社会化生产资料，数据是数字劳动的凝结。</p>
-        </div>
-        <div className="global-readout" data-tutorial="global-status">
-          <div className="global-readout__warning"><TriangleAlert /> 模型漂移监测</div>
-          <div className="global-readout__value">{gameState.globalModelDrift.toFixed(1)}</div>
-          <div className="global-readout__meta">
-            <span>全局稳定度</span>
-            <strong>{gameState.globalStability.toFixed(1)}</strong>
-          </div>
-        </div>
-      </section>
 
       <LampStatusBoard state={lampState} onOpen={() => setLampOpen(true)} />
 
@@ -570,8 +563,7 @@ export function GameDashboard({
 
       <section className="faction-roster" data-tutorial="faction-roster">
         <div className="faction-roster__heading">
-          <p className="eyebrow">FACTION RESOURCE MONITOR</p>
-          <h2>全势力资源态势</h2>
+          <p className="eyebrow">FACTION RESOURCE MONITOR / 全势力资源态势</p>
         </div>
         <div className="faction-grid" aria-label="势力资源">
           {gameState.factions.map((faction, index) => (
