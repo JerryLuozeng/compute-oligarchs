@@ -137,8 +137,8 @@ export function TrajectoryDialog({
           </section>
 
           <section>
-            <h3><Crosshair />主动行动</h3>
-            {recentActions.length === 0 ? <p className="trajectory-dialog__empty">尚未执行主动行动。</p> : (
+            <h3><Crosshair />治理部署</h3>
+            {recentActions.length === 0 ? <p className="trajectory-dialog__empty">尚未留下治理部署记录。</p> : (
               <ul className="trajectory-dialog__timeline">
                 {recentActions.map((record) => <li key={record.id}>
                   <span>{getTimeCoordinate(record.turn).compactLabel}</span><strong>{actionLabels[record.type]}</strong><small>{record.targetId}</small>

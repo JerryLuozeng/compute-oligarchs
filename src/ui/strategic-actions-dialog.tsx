@@ -57,20 +57,20 @@ export function StrategicActionsDialog({
     <div className="event-overlay" role="presentation">
       <section className="strategic-actions-dialog" role="dialog" aria-modal="true" aria-labelledby="strategic-actions-title">
         <header className="strategic-actions-dialog__header">
-          <span><Crosshair /> ACTIVE OPERATIONS</span>
-          <strong><Gauge /> {actionState.pointsRemaining} 行动点</strong>
-          <button type="button" onClick={onClose} aria-label="暂时关闭行动面板"><X /></button>
+          <span><Crosshair /> GOVERNANCE DESK</span>
+          <strong><Gauge /> 治理额度 {actionState.pointsRemaining}</strong>
+          <button type="button" onClick={onClose} aria-label="暂时关闭治理面板"><X /></button>
         </header>
 
         <div className="strategic-actions-dialog__intro">
-          <p>季度行动阶段</p>
-          <h2 id="strategic-actions-title">主动处理问题</h2>
-          <span>行动会改变世界，也会留下压力。剩余行动点可以主动放弃。</span>
+          <p>本期治理部署</p>
+          <h2 id="strategic-actions-title">安排治理措施</h2>
+          <span>每项措施都会改变世界，也会留下新的压力。未使用的治理额度可以放弃。</span>
         </div>
 
         <div className="strategic-actions-dialog__layout">
           <div className="strategic-actions-dialog__list" role="radiogroup" aria-label="可用行动">
-            <h3>选择行动</h3>
+            <h3>选择治理措施</h3>
             {strategicActionDefinitions.map((action) => (
               <button
                 type="button"
@@ -80,7 +80,7 @@ export function StrategicActionsDialog({
                 onClick={() => setSelectedType(action.type)}
                 key={action.type}
               >
-                <span>{action.cost} 行动点</span>
+                <span>占用 {action.cost} 点额度</span>
                 <strong>{action.name}</strong>
                 <small>{action.description}</small>
               </button>
@@ -119,14 +119,14 @@ export function StrategicActionsDialog({
               </dl>
             )}
             <button className="strategic-actions-dialog__execute" type="button" disabled={!canExecute} onClick={execute}>
-              {canExecute ? `执行${definition.name}` : "行动点不足"} <ArrowRight />
+              {canExecute ? `部署：${definition.name}` : "治理额度不足"} <ArrowRight />
             </button>
             <div className="strategic-actions-dialog__feedback" aria-live="polite">
-              {feedback || "等待行动指令。没有任何方案是免费的。"}
+              {feedback || "等待治理部署。没有任何方案是免费的。"}
             </div>
             <div className="strategic-actions-dialog__history">
-              <span>本季度记录</span>
-              {currentRecords.length === 0 ? <p>尚未执行行动</p> : currentRecords.map((record) => (
+              <span>本期治理记录</span>
+              {currentRecords.length === 0 ? <p>尚未部署措施</p> : currentRecords.map((record) => (
                 <p key={record.id}>
                   <strong>{strategicActionDefinitions.find((action) => action.type === record.type)?.name ?? record.type}</strong>
                   <span>{getTargetName(record.type, record.targetId)}</span>
@@ -138,7 +138,7 @@ export function StrategicActionsDialog({
 
         <footer>
           <span>结束后将结算社会反馈与动态事件。</span>
-          <button type="button" onClick={onFinish}>完成本季度行动</button>
+          <button type="button" onClick={onFinish}>完成本期治理</button>
         </footer>
       </section>
     </div>

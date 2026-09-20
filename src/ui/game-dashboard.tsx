@@ -12,8 +12,7 @@ import {
   MessageSquareQuote,
   Radio,
   ShieldCheck,
-  TriangleAlert,
-  Users
+  TriangleAlert
 } from "lucide-react";
 import { initialGameState } from "@/core/models/initial-state";
 import type { Faction } from "@/core/models/faction";
@@ -42,10 +41,7 @@ import {
   getFactionAdvisors,
   getStoryPerspective
 } from "@/content/faction-story";
-import {
-  createAdvisorBriefings,
-  resolveAdvisorDecision
-} from "@/content/advisor-system";
+import { resolveAdvisorDecision } from "@/content/advisor-system";
 import {
   advanceStoryChapter,
   findNextStoryEvent,
@@ -175,12 +171,10 @@ function FactionCard({ faction, index }: { faction: Faction; index: number }) {
 export function GameDashboard({
   initialSession,
   selectedFactionId,
-  onChangeFaction,
   onReturnToMenu
 }: {
   initialSession?: GameSession;
   selectedFactionId: FactionId;
-  onChangeFaction: () => void;
   onReturnToMenu: () => void;
 }) {
   const startingSession = initialSession ?? createGameSession(initialGameState, selectedFactionId);
@@ -262,7 +256,7 @@ export function GameDashboard({
 
   const beginActions = (turn: number) => {
     setStrategicActionState((current) => beginStrategicActionPhase(current, turn));
-    setStrategicActionStatus("本季度有 3 个行动点。选择行动，或主动结束行动阶段。");
+    setStrategicActionStatus("本期有 3 点治理额度。请选择治理措施，或结束本期部署。");
     setStrategicActionsOpen(true);
   };
 
@@ -428,8 +422,8 @@ export function GameDashboard({
     const result = executeStrategicAction(gameState, strategicActionState, selectedFactionId, action);
     if (result.error !== undefined) {
       const errors = {
-        "phase-inactive": "行动阶段已经结束。",
-        "insufficient-points": "剩余行动点不足。",
+        "phase-inactive": "本期治理部署已经结束。",
+        "insufficient-points": "剩余治理额度不足。",
         "invalid-target": "当前目标不适用于这项行动。",
         "insufficient-resources": "当前资源不足，无法承担这项行动。"
       } as const;
@@ -575,13 +569,12 @@ export function GameDashboard({
               disabled={strategicActionState.status !== "active"}
               onClick={() => setStrategicActionsOpen(true)}
             >
-              <Crosshair />主动行动
-              <span>{strategicActionState.status === "active" ? `${strategicActionState.pointsRemaining} AP` : "待剧情"}</span>
+              <Crosshair />治理部署
+              <span>{strategicActionState.status === "active" ? `${strategicActionState.pointsRemaining} 额度` : "待剧情"}</span>
             </button>
             <button className="game-action" type="button" onClick={() => setLampOpen(true)}><Lightbulb />点灯调度<span>{lampState.allocationCount > 0 ? "调整" : "必做"}</span></button>
             <button className="game-action" type="button" onClick={() => setTutorialOpen(true)}><BookOpen />新手引导<span>重开</span></button>
             <button className="game-action" type="button" onClick={openSaveDialog}><FolderClock />保存进度<span>六档</span></button>
-            <button className="game-action" type="button" onClick={onChangeFaction}><Users />更换势力</button>
             <button className="game-action" type="button" onClick={onReturnToMenu}><House />返回主菜单</button>
           </nav>
         </aside>
@@ -662,16 +655,6 @@ export function GameDashboard({
           timeLabel={currentTime.label}
           legacyEcho={getPolicyLegacyEcho(policyLegacyState, activeStory.id)?.description}
           legacyNotice={storyChoice === null ? undefined : getPolicyChoiceNotice(activeStory.id, storyChoice.id)}
-          advisorBriefings={createAdvisorBriefings(
-            activeStory,
-            selectedFactionId,
-            advisorTrust,
-            advisorRelationshipState,
-            interestPressureState,
-            gameState,
-            policyLegacyState,
-            strategicActionState
-          )}
           onChoose={chooseStory}
           onContinue={continueStory}
         />

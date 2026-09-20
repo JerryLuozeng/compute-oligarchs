@@ -6,7 +6,7 @@
   overflow-y: auto;
   place-items: center;
   padding: 32px;
-  background: rgb(5 5 4 / 0.94);
+  background: rgb(37 39 32 / 0.94);
   backdrop-filter: blur(3px) saturate(0.25);
 }
 .event-overlay::before { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent 0 4px, rgb(229 221 200 / 0.025) 4px 5px); content: ""; pointer-events: none; }

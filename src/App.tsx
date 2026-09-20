@@ -61,7 +61,6 @@ function App() {
       key={selectedFactionId}
       initialSession={loadedGame?.session}
       selectedFactionId={selectedFactionId}
-      onChangeFaction={() => setView("faction-select")}
       onReturnToMenu={() => {
         setSelectedFactionId(null);
         setLoadedGame(null);
