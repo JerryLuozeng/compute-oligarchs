@@ -90,6 +90,7 @@ import { StrategicActionsDialog } from "./strategic-actions-dialog";
 import { SocialFeedbackDialog } from "./social-feedback-dialog";
 import { getTimeCoordinate } from "./time-flow";
 import { TutorialOverlay } from "./tutorial-overlay";
+import { TrajectoryDialog } from "./trajectory-dialog";
 import { isTutorialComplete, markTutorialComplete } from "./tutorial-storage";
 import "./game-dashboard.css";
 
@@ -193,6 +194,7 @@ export function GameDashboard({
   const [settlement, setSettlement] = useState<ChapterSettlement | null>(null);
   const [saveSlots, setSaveSlots] = useState<readonly SaveSlot[] | null>(null);
   const [saveStatus, setSaveStatus] = useState("");
+  const [trajectoryOpen, setTrajectoryOpen] = useState(false);
   const selectedFaction = gameState.factions.find((faction) => faction.id === selectedFactionId);
   const selectedProfile = getFactionProfile(selectedFactionId);
   const selectedRoute = factionRoutes[selectedFactionId];
@@ -299,6 +301,7 @@ export function GameDashboard({
     setSettlement(null);
     setSaveSlots(null);
     setSaveStatus("");
+    setTrajectoryOpen(false);
     setLampOpen(true);
     window.scrollTo({ top: 0, left: 0 });
   };
@@ -542,7 +545,7 @@ export function GameDashboard({
               <span>{storyComplete ? "时间线已进入自由推演" : pendingStory === undefined ? "本章即将结算" : "下一季度将触发剧情"}</span>
               <strong>{storyComplete ? "∞" : pendingStory?.displayCode ?? pendingStory?.id ?? "章末"}</strong>
             </div>
-            <button className="game-action game-action--active" type="button"><Info />态势总览</button>
+            <button className="game-action game-action--active" type="button" onClick={() => setTrajectoryOpen(true)}><Info />态势总览</button>
             <button
               className="game-action"
               type="button"
@@ -612,6 +615,18 @@ export function GameDashboard({
           status={saveStatus}
           onClose={() => setSaveSlots(null)}
           onSave={saveToSlot}
+        />
+      )}
+      {!trajectoryOpen ? null : (
+        <TrajectoryDialog
+          factionId={selectedFactionId}
+          pressures={interestPressureState}
+          policies={policyLegacyState}
+          actions={strategicActionState}
+          advisorTrust={advisorTrust}
+          advisorRelationships={advisorRelationshipState}
+          eventDecisions={eventDecisionState}
+          onClose={() => setTrajectoryOpen(false)}
         />
       )}
       {settlement === null ? null : <ChapterSettlementDialog settlement={settlement} onContinue={continueSettlement} />}

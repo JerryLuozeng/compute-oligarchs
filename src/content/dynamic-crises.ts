@@ -250,6 +250,17 @@ const dynamicCrisisDefinitions: readonly DynamicCrisisDefinition[] = [
   }
 ];
 
+export const getDynamicCrisisDecisionLabel = (
+  eventId: string,
+  optionId: string
+): { eventTitle: string; optionText: string } | undefined => {
+  const crisis = dynamicCrisisDefinitions.find((definition) => definition.id === eventId);
+  const selectedOption = crisis?.options.find((candidate) => candidate.id === optionId);
+  return crisis === undefined || selectedOption === undefined
+    ? undefined
+    : { eventTitle: crisis.title, optionText: selectedOption.text };
+};
+
 const toRuntimeCrisis = (
   definition: DynamicCrisisDefinition,
   assessment: CrisisAssessment
