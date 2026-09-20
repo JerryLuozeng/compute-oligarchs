@@ -9,6 +9,7 @@ import { getFactionAdvisors, type AdvisorTrustState } from "@/content/faction-st
 import { getInterestPressureLevel, type InterestPressureState } from "@/content/interest-pressure";
 import { lampDefinitions } from "@/content/lamps";
 import { policyLegacyDefinitions, type PolicyLegacyState, type PolicyLegacyStatus } from "@/content/policy-legacies";
+import { getTimeCoordinate } from "./time-flow";
 import "./trajectory-dialog.css";
 
 const pressureLabels = {
@@ -140,7 +141,7 @@ export function TrajectoryDialog({
             {recentActions.length === 0 ? <p className="trajectory-dialog__empty">尚未执行主动行动。</p> : (
               <ul className="trajectory-dialog__timeline">
                 {recentActions.map((record) => <li key={record.id}>
-                  <span>Q{record.turn}</span><strong>{actionLabels[record.type]}</strong><small>{record.targetId}</small>
+                  <span>{getTimeCoordinate(record.turn).compactLabel}</span><strong>{actionLabels[record.type]}</strong><small>{record.targetId}</small>
                 </li>)}
               </ul>
             )}
@@ -153,7 +154,7 @@ export function TrajectoryDialog({
                 {recentDecisions.map((record) => {
                   const label = decisionLabel(record.eventId, record.optionId);
                   return <li key={`${record.turn}-${record.eventId}`}>
-                    <span>{record.origin === "dynamic" ? "危机" : `Q${record.turn}`}</span>
+                    <span>{record.origin === "dynamic" ? "危机" : getTimeCoordinate(record.turn).compactLabel}</span>
                     <strong>{label.eventTitle}</strong><small>{label.optionText}</small>
                   </li>;
                 })}
