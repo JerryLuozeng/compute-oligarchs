@@ -2,6 +2,7 @@ import type { Faction } from "@/core/models/faction";
 import type { GameState } from "@/core/models/game-state";
 import type { InfrastructureRegion } from "@/core/models/infrastructure-region";
 import { infrastructureRegionIds, type FactionId, type InfrastructureRegionId } from "@/core/models/ids";
+import { initialInfrastructureRegions } from "@/core/models/initial-state";
 import {
   createStrategicActionState,
   isStrategicActionState,
@@ -126,6 +127,28 @@ const isGameState = (value: unknown): value is GameState =>
   && value.infrastructureRegions.every(isInfrastructureRegion)
   && isFiniteNumber(value.globalModelDrift) && isFiniteNumber(value.globalStability);
 
+const normalizeGameState = (value: unknown): GameState | undefined => {
+  if (isGameState(value)) return value;
+  if (!isRecord(value) || !Number.isInteger(value.turn)
+    || !Array.isArray(value.factions) || value.factions.length !== factionIds.length
+    || !value.factions.every(isFaction) || !Array.isArray(value.tiles)
+    || !isFiniteNumber(value.globalModelDrift) || !isFiniteNumber(value.globalStability)) return undefined;
+
+  return {
+    turn: value.turn as number,
+    factions: value.factions,
+    infrastructureRegions: initialInfrastructureRegions.map((region) => ({ ...region })),
+    globalModelDrift: value.globalModelDrift,
+    globalStability: value.globalStability
+  };
+};
+
+const normalizeSessionGameState = (value: unknown): unknown => {
+  if (!isRecord(value)) return value;
+  const gameState = normalizeGameState(value.gameState);
+  return gameState === undefined ? value : { ...value, gameState };
+};
+
 const isLampState = (value: unknown): value is LampTendencyState => {
   if (!isRecord(value) || !isRecord(value.current)) return false;
   return isValidLampAllocation(value.current as LampTendencyState["current"])
@@ -199,50 +222,51 @@ const parseSavedGame = (value: string): SavedGame | null => {
     const candidate: unknown = JSON.parse(value);
     if (!isRecord(candidate) || typeof candidate.savedAt !== "string"
       || Number.isNaN(Date.parse(candidate.savedAt)) || !isFactionId(candidate.selectedFactionId)) return null;
+    const session = normalizeSessionGameState(candidate.session);
 
-    if (candidate.version === 7 && isSession(candidate.session, candidate.selectedFactionId)) {
-      return candidate as unknown as SavedGame;
+    if (candidate.version === 7 && isSession(session, candidate.selectedFactionId)) {
+      return { ...candidate, version: 7, session } as SavedGame;
     }
-    if (candidate.version === 6 && isVersionSixSession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 6 && isVersionSixSession(session, candidate.selectedFactionId)) {
       return {
         version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
-        session: { ...candidate.session, eventDecisionState: createEventDecisionState() }
+        session: { ...session, eventDecisionState: createEventDecisionState() }
       };
     }
-    if (candidate.version === 5 && isVersionFiveSession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 5 && isVersionFiveSession(session, candidate.selectedFactionId)) {
       return {
         version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: {
-          ...candidate.session,
+          ...session,
           advisorRelationshipState: createAdvisorRelationshipState(),
           eventDecisionState: createEventDecisionState()
         }
       };
     }
-    if (candidate.version === 4 && isVersionFourSession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 4 && isVersionFourSession(session, candidate.selectedFactionId)) {
       return {
         version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: {
-          ...candidate.session,
+          ...session,
           interestPressureState: createInterestPressureState(),
           advisorRelationshipState: createAdvisorRelationshipState(),
           eventDecisionState: createEventDecisionState()
         }
       };
     }
-    if (candidate.version === 3 && isVersionThreeSession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 3 && isVersionThreeSession(session, candidate.selectedFactionId)) {
       return {
         version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: {
-          ...candidate.session,
+          ...session,
           strategicActionState: createStrategicActionState(),
           interestPressureState: createInterestPressureState(),
           advisorRelationshipState: createAdvisorRelationshipState(),
@@ -250,13 +274,13 @@ const parseSavedGame = (value: string): SavedGame | null => {
         }
       };
     }
-    if (candidate.version === 2 && isVersionTwoSession(candidate.session, candidate.selectedFactionId)) {
+    if (candidate.version === 2 && isVersionTwoSession(session, candidate.selectedFactionId)) {
       return {
         version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
         session: {
-          ...candidate.session,
+          ...session,
           policyLegacyState: createPolicyLegacyState(),
           strategicActionState: createStrategicActionState(),
           interestPressureState: createInterestPressureState(),
@@ -265,12 +289,13 @@ const parseSavedGame = (value: string): SavedGame | null => {
         }
       };
     }
-    if (candidate.version === 1 && isGameState(candidate.gameState)) {
+    const gameState = normalizeGameState(candidate.gameState);
+    if (candidate.version === 1 && gameState !== undefined) {
       return {
         version: 7,
         savedAt: candidate.savedAt,
         selectedFactionId: candidate.selectedFactionId,
-        session: createGameSession(candidate.gameState, candidate.selectedFactionId)
+        session: createGameSession(gameState, candidate.selectedFactionId)
       };
     }
     return null;
