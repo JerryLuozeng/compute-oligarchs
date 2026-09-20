@@ -1,0 +1,249 @@
+[
+  {
+    "region_id": 0,
+    "hex": "#000000",
+    "name": "Water / background",
+    "visible_pixels": 3049910,
+    "is_visible": true
+  },
+  {
+    "region_id": 1,
+    "hex": "#010000",
+    "source_id": "state1",
+    "name": "state1",
+    "visible_pixels": 59890,
+    "is_visible": true
+  },
+  {
+    "region_id": 2,
+    "hex": "#020000",
+    "source_id": "state-gap1",
+    "name": "state-gap1",
+    "visible_pixels": 18301,
+    "is_visible": true
+  },
+  {
+    "region_id": 3,
+    "hex": "#030000",
+    "source_id": "state2",
+    "name": "state2",
+    "visible_pixels": 29513,
+    "is_visible": true
+  },
+  {
+    "region_id": 4,
+    "hex": "#040000",
+    "source_id": "state-gap2",
+    "name": "state-gap2",
+    "visible_pixels": 50339,
+    "is_visible": true
+  },
+  {
+    "region_id": 5,
+    "hex": "#050000",
+    "source_id": "state3",
+    "name": "state3",
+    "visible_pixels": 16657,
+    "is_visible": true
+  },
+  {
+    "region_id": 6,
+    "hex": "#060000",
+    "source_id": "state-gap3",
+    "name": "state-gap3",
+    "visible_pixels": 2550,
+    "is_visible": true
+  },
+  {
+    "region_id": 7,
+    "hex": "#070000",
+    "source_id": "state4",
+    "name": "state4",
+    "visible_pixels": 899,
+    "is_visible": true
+  },
+  {
+    "region_id": 8,
+    "hex": "#080000",
+    "source_id": "state-gap4",
+    "name": "state-gap4",
+    "visible_pixels": 34941,
+    "is_visible": true
+  },
+  {
+    "region_id": 9,
+    "hex": "#090000",
+    "source_id": "state5",
+    "name": "state5",
+    "visible_pixels": 14511,
+    "is_visible": true
+  },
+  {
+    "region_id": 10,
+    "hex": "#0a0000",
+    "source_id": "state-gap5",
+    "name": "state-gap5",
+    "visible_pixels": 20420,
+    "is_visible": true
+  },
+  {
+    "region_id": 11,
+    "hex": "#0b0000",
+    "source_id": "state6",
+    "name": "state6",
+    "visible_pixels": 32912,
+    "is_visible": true
+  },
+  {
+    "region_id": 12,
+    "hex": "#0c0000",
+    "source_id": "state-gap6",
+    "name": "state-gap6",
+    "visible_pixels": 2292,
+    "is_visible": true
+  },
+  {
+    "region_id": 13,
+    "hex": "#0d0000",
+    "source_id": "state7",
+    "name": "state7",
+    "visible_pixels": 24998,
+    "is_visible": true
+  },
+  {
+    "region_id": 14,
+    "hex": "#0e0000",
+    "source_id": "state-gap7",
+    "name": "state-gap7",
+    "visible_pixels": 2000,
+    "is_visible": true
+  },
+  {
+    "region_id": 15,
+    "hex": "#0f0000",
+    "source_id": "state8",
+    "name": "state8",
+    "visible_pixels": 48382,
+    "is_visible": true
+  },
+  {
+    "region_id": 16,
+    "hex": "#100000",
+    "source_id": "state-gap8",
+    "name": "state-gap8",
+    "visible_pixels": 60205,
+    "is_visible": true
+  },
+  {
+    "region_id": 17,
+    "hex": "#110000",
+    "source_id": "state9",
+    "name": "state9",
+    "visible_pixels": 53684,
+    "is_visible": true
+  },
+  {
+    "region_id": 18,
+    "hex": "#120000",
+    "source_id": "state-gap9",
+    "name": "state-gap9",
+    "visible_pixels": 1038,
+    "is_visible": true
+  },
+  {
+    "region_id": 19,
+    "hex": "#130000",
+    "source_id": "state10",
+    "name": "state10",
+    "visible_pixels": 11310,
+    "is_visible": true
+  },
+  {
+    "region_id": 20,
+    "hex": "#140000",
+    "source_id": "state-gap10",
+    "name": "state-gap10",
+    "visible_pixels": 18765,
+    "is_visible": true
+  },
+  {
+    "region_id": 21,
+    "hex": "#150000",
+    "source_id": "state11",
+    "name": "state11",
+    "visible_pixels": 13564,
+    "is_visible": true
+  },
+  {
+    "region_id": 22,
+    "hex": "#160000",
+    "source_id": "state-gap11",
+    "name": "state-gap11",
+    "visible_pixels": 18846,
+    "is_visible": true
+  },
+  {
+    "region_id": 23,
+    "hex": "#170000",
+    "source_id": "state12",
+    "name": "state12",
+    "visible_pixels": 343,
+    "is_visible": true
+  },
+  {
+    "region_id": 24,
+    "hex": "#180000",
+    "source_id": "state-gap12",
+    "name": "state-gap12",
+    "visible_pixels": 9199,
+    "is_visible": true
+  },
+  {
+    "region_id": 25,
+    "hex": "#190000",
+    "source_id": "state13",
+    "name": "state13",
+    "visible_pixels": 6041,
+    "is_visible": true
+  },
+  {
+    "region_id": 26,
+    "hex": "#1a0000",
+    "source_id": "state-gap13",
+    "name": "state-gap13",
+    "visible_pixels": 37745,
+    "is_visible": true
+  },
+  {
+    "region_id": 27,
+    "hex": "#1b0000",
+    "source_id": "state14",
+    "name": "state14",
+    "visible_pixels": 37359,
+    "is_visible": true
+  },
+  {
+    "region_id": 28,
+    "hex": "#1c0000",
+    "source_id": "state-gap14",
+    "name": "state-gap14",
+    "visible_pixels": 3261,
+    "is_visible": true
+  },
+  {
+    "region_id": 29,
+    "hex": "#1d0000",
+    "source_id": "state15",
+    "name": "state15",
+    "visible_pixels": 17346,
+    "is_visible": true
+  },
+  {
+    "region_id": 30,
+    "hex": "#1e0000",
+    "source_id": "state-gap15",
+    "name": "state-gap15",
+    "visible_pixels": 38907,
+    "is_visible": true
+  }
+]
