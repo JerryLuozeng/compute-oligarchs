@@ -37,10 +37,13 @@ import { createChapterSettlement, type ChapterSettlement } from "@/content/chapt
 import { getFactionProfile } from "@/content/factions";
 import { applyFactionArcChange, factionRoutes } from "@/content/faction-routes";
 import {
-  applyAdvisorTrust,
   getFactionAdvisors,
   getStoryPerspective
 } from "@/content/faction-story";
+import {
+  createAdvisorBriefings,
+  resolveAdvisorDecision
+} from "@/content/advisor-system";
 import {
   advanceStoryChapter,
   findNextStoryEvent,
@@ -171,6 +174,7 @@ export function GameDashboard({
   );
   const [arcState, setArcState] = useState(startingSession.arcState);
   const [advisorTrust, setAdvisorTrust] = useState(startingSession.advisorTrust);
+  const [advisorRelationshipState, setAdvisorRelationshipState] = useState(startingSession.advisorRelationshipState);
   const [storyProgress, setStoryProgress] = useState(startingSession.storyProgress);
   const [policyLegacyState, setPolicyLegacyState] = useState(startingSession.policyLegacyState);
   const [strategicActionState, setStrategicActionState] = useState(startingSession.strategicActionState);
@@ -266,6 +270,7 @@ export function GameDashboard({
     setLampState(freshSession.lampState);
     setArcState(freshSession.arcState);
     setAdvisorTrust(freshSession.advisorTrust);
+    setAdvisorRelationshipState(freshSession.advisorRelationshipState);
     setStoryProgress(freshSession.storyProgress);
     setPolicyLegacyState(freshSession.policyLegacyState);
     setStrategicActionState(freshSession.strategicActionState);
@@ -287,6 +292,7 @@ export function GameDashboard({
     lampState,
     arcState,
     advisorTrust,
+    advisorRelationshipState,
     storyProgress,
     policyLegacyState,
     strategicActionState,
@@ -325,7 +331,16 @@ export function GameDashboard({
     if (activeStory === null || storyChoice !== null) return;
     setStoryProgress((current) => recordStoryChoice(current, activeStory, choice.id));
     setArcState((current) => applyFactionArcChange(current, choice.arcChange ?? {}));
-    setAdvisorTrust((current) => applyAdvisorTrust(current, choice.advisorId));
+    const advisorDecision = resolveAdvisorDecision(
+      advisorTrust,
+      advisorRelationshipState,
+      selectedFactionId,
+      activeStory,
+      choice,
+      gameState.turn
+    );
+    setAdvisorTrust(advisorDecision.trust);
+    setAdvisorRelationshipState(advisorDecision.relationships);
     setPolicyLegacyState((current) => applyPolicyChoice(current, activeStory.id, choice.id, gameState.turn));
     setStoryChoice(choice);
   };
@@ -578,6 +593,16 @@ export function GameDashboard({
           timeLabel={currentTime.label}
           legacyEcho={getPolicyLegacyEcho(policyLegacyState, activeStory.id)?.description}
           legacyNotice={storyChoice === null ? undefined : getPolicyChoiceNotice(activeStory.id, storyChoice.id)}
+          advisorBriefings={createAdvisorBriefings(
+            activeStory,
+            selectedFactionId,
+            advisorTrust,
+            advisorRelationshipState,
+            interestPressureState,
+            gameState,
+            policyLegacyState,
+            strategicActionState
+          )}
           onChoose={chooseStory}
           onContinue={continueStory}
         />

@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, BookOpen, Gauge, History, MessageSquareQuote, RadioTower, TimerReset } from "lucide-react";
 import type { StoryChoice, StoryEvent } from "@/content/story-events";
 import { getAdvisor } from "@/content/faction-story";
+import {
+  getAdvisorSignalLabel,
+  type AdvisorBriefing
+} from "@/content/advisor-system";
 import { getDecisionImpacts } from "./time-flow";
 import "./event-dialog.css";
 import "./story-dialog.css";
@@ -73,6 +77,7 @@ export function StoryDialog({
   timeLabel,
   legacyEcho,
   legacyNotice,
+  advisorBriefings,
   onChoose,
   onContinue
 }: {
@@ -84,6 +89,7 @@ export function StoryDialog({
   timeLabel: string;
   legacyEcho?: string;
   legacyNotice?: string;
+  advisorBriefings: readonly AdvisorBriefing[];
   onChoose: (choice: StoryChoice) => void;
   onContinue: () => void;
 }) {
@@ -136,6 +142,20 @@ export function StoryDialog({
           {selectedChoice === null ? <p className="story-dialog__perspective">{perspective}</p> : null}
           {selectedChoice === null && legacyEcho !== undefined ? (
             <p className="story-dialog__legacy"><History /> 历史回声：{legacyEcho}</p>
+          ) : null}
+          {selectedChoice === null ? (
+            <div className="story-dialog__briefings" aria-label="顾问研判">
+              {advisorBriefings.map((briefing) => (
+                <article key={briefing.advisor.id}>
+                  <header>
+                    <span>{briefing.advisor.name}<small>{briefing.advisor.role}</small></span>
+                    <strong>{getAdvisorSignalLabel(briefing.signal)}</strong>
+                  </header>
+                  <p>{briefing.message}</p>
+                  {briefing.evidence === undefined ? null : <blockquote>{briefing.evidence}</blockquote>}
+                </article>
+              ))}
+            </div>
           ) : null}
           {selectedChoice !== null && legacyNotice !== undefined ? (
             <p className="story-dialog__legacy story-dialog__legacy--recorded"><History /> {legacyNotice}</p>

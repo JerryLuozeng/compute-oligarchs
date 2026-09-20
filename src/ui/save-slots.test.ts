@@ -29,7 +29,7 @@ describe("readSaveSlots", () => {
     expect(slots[0]?.status).toBe("empty");
     expect(slots[1]?.status).toBe("ready");
     expect(slots[1]?.savedGame?.selectedFactionId).toBe("labor_union");
-    expect(slots[1]?.savedGame?.version).toBe(5);
+    expect(slots[1]?.savedGame?.version).toBe(6);
     expect(slots[1]?.savedGame?.session.gameState.turn).toBe(initialGameState.turn);
     expect(slots[1]?.savedGame?.session.storyProgress.chapterIndex).toBe(0);
   });
@@ -53,7 +53,7 @@ describe("readSaveSlots", () => {
     expect(slots.every((slot) => slot.status === "empty")).toBe(true);
   });
 
-  it("writes and restores a complete version five session", () => {
+  it("writes and restores a complete version six session", () => {
     const entries: Record<string, string> = {};
     const session = createGameSession(initialGameState, "consortium");
     const saved = writeSaveSlot(
@@ -90,6 +90,15 @@ describe("readSaveSlots", () => {
           turn: 2,
           pressures: { ...session.interestPressureState.pressures, workshop: 24 }
         },
+        advisorRelationshipState: {
+          history: [{
+            turn: 2,
+            eventId: "CONSORTIUM-T1",
+            advisorId: "park",
+            delta: 10,
+            reason: "advice-followed"
+          }]
+        },
         resolvedEventIds: ["data-strike"]
       },
       () => new Date("2026-09-20T08:00:00.000Z")
@@ -111,6 +120,7 @@ describe("readSaveSlots", () => {
       pointsRemaining: 2
     });
     expect(restored?.session.interestPressureState.pressures.workshop).toBe(24);
+    expect(restored?.session.advisorRelationshipState.history[0]?.advisorId).toBe("park");
   });
 
   it("migrates version two sessions with an empty policy history", () => {
@@ -133,10 +143,11 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(5);
+    expect(slots[0]?.savedGame?.version).toBe(6);
     expect(slots[0]?.savedGame?.session.policyLegacyState.records).toEqual([]);
     expect(slots[0]?.savedGame?.session.strategicActionState.status).toBe("complete");
     expect(slots[0]?.savedGame?.session.interestPressureState.pressures.workshop).toBe(0);
+    expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
   });
 
   it("migrates version three sessions with an empty action history", () => {
@@ -160,9 +171,10 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(5);
+    expect(slots[0]?.savedGame?.version).toBe(6);
     expect(slots[0]?.savedGame?.session.strategicActionState.history).toEqual([]);
     expect(slots[0]?.savedGame?.session.interestPressureState.history).toEqual([]);
+    expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
   });
 
   it("migrates version four sessions with empty interest pressure", () => {
@@ -187,8 +199,36 @@ describe("readSaveSlots", () => {
     }));
 
     expect(slots[0]?.status).toBe("ready");
-    expect(slots[0]?.savedGame?.version).toBe(5);
+    expect(slots[0]?.savedGame?.version).toBe(6);
     expect(slots[0]?.savedGame?.session.interestPressureState.pressures.industry).toBe(0);
+    expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
+  });
+
+  it("migrates version five sessions with empty advisor history", () => {
+    const session = createGameSession(initialGameState, "independent_labs");
+    const versionFiveSession = {
+      gameState: session.gameState,
+      lampState: session.lampState,
+      arcState: session.arcState,
+      advisorTrust: session.advisorTrust,
+      storyProgress: session.storyProgress,
+      policyLegacyState: session.policyLegacyState,
+      strategicActionState: session.strategicActionState,
+      interestPressureState: session.interestPressureState,
+      resolvedEventIds: session.resolvedEventIds
+    };
+    const slots = readSaveSlots(createStorage({
+      [`${SAVE_STORAGE_PREFIX}1`]: JSON.stringify({
+        version: 5,
+        savedAt: "2026-09-20T08:00:00.000Z",
+        selectedFactionId: "independent_labs",
+        session: versionFiveSession
+      })
+    }));
+
+    expect(slots[0]?.status).toBe("ready");
+    expect(slots[0]?.savedGame?.version).toBe(6);
+    expect(slots[0]?.savedGame?.session.advisorRelationshipState.history).toEqual([]);
   });
 
   it("rejects invalid slot indexes and handles write failures", () => {
