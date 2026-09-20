@@ -13,6 +13,7 @@ export interface RuntimeGameEventOption extends GameEventOption {
 }
 
 export interface RuntimeGameEvent extends Omit<GameEvent, "trigger" | "options"> {
+  origin?: "configured" | "dynamic";
   trigger: GameEvent["trigger"] & {
     matches: (state: GameState) => boolean;
   };
@@ -158,6 +159,7 @@ export const applyEventEffects = (
 
 const createRuntimeEvent = (event: GameEvent): RuntimeGameEvent => ({
   ...event,
+  origin: "configured",
   trigger: {
     ...event.trigger,
     matches: (state) => event.trigger.all.every((condition) => matchesEventCondition(condition, state))

@@ -47,7 +47,7 @@ export function EventDialog({
       >
         <div className="event-dialog__noise" aria-hidden="true" />
         <header className="event-dialog__header">
-          <span><RadioTower /> EVENT INTERCEPT</span>
+          <span><RadioTower /> {event.origin === "dynamic" ? "DYNAMIC CRISIS" : "EVENT INTERCEPT"}</span>
           <span className="event-dialog__theme"><i />{themeLabel[event.theme]}</span>
         </header>
 

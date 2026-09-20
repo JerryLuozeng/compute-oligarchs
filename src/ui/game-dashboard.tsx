@@ -32,6 +32,7 @@ import {
   type RuntimeGameEvent,
   type RuntimeGameEventOption
 } from "@/content/event-runtime";
+import { findTriggeredDynamicCrisis } from "@/content/dynamic-crises";
 import { evaluateEnding, evaluateNarrativeEnding, type EndingResult } from "@/content/endings";
 import { createChapterSettlement, type ChapterSettlement } from "@/content/chapter-settlements";
 import { getFactionProfile } from "@/content/factions";
@@ -214,7 +215,17 @@ export function GameDashboard({
 
   const resolveTimeConsequences = (state: GameState) => {
     const nextEnding = evaluateEnding(state, selectedFactionId);
-    const nextEvent = nextEnding === null ? findTriggeredEvent(state, resolvedEventIds) ?? null : null;
+    const nextEvent = nextEnding === null
+      ? findTriggeredDynamicCrisis({
+          gameState: state,
+          playerFactionId: selectedFactionId,
+          pressureState: interestPressureState,
+          actionState: strategicActionState,
+          policyState: policyLegacyState,
+          advisorTrust,
+          advisorRelationships: advisorRelationshipState
+        }, resolvedEventIds) ?? findTriggeredEvent(state, resolvedEventIds) ?? null
+      : null;
     setEnding(nextEnding);
     setActiveEvent(nextEvent);
     if (nextEnding === null && nextEvent === null) queueChapterSettlement(state);
