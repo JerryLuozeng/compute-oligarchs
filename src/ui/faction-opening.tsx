@@ -28,7 +28,7 @@ export function FactionOpening({
       <div className="flow-scanline" aria-hidden="true" />
       <header className="flow-header faction-opening__header">
         <button className="flow-back" type="button" onClick={onBack} aria-label="返回势力选择"><ArrowLeft /></button>
-        <span className="flow-brand"><Radio /> FACTION BRIEFING / {profile.code}</span>
+        <span className="flow-brand"><Radio /> GOVERNANCE BRIEFING / {profile.code}</span>
         <span className="flow-step">序章 / 00</span>
       </header>
 
@@ -42,22 +42,28 @@ export function FactionOpening({
           </div>
           <p className="faction-opening__playstyle">{route.playstyle}</p>
           <Button type="button" size="lg" onClick={onContinue} data-testid="enter-game-button">
-            接过调度权 <ArrowRight />
+            确认授权并进入地图 <ArrowRight />
           </Button>
         </section>
 
         <aside className="faction-opening__ledger" aria-label="开局禀赋">
           <p>INITIAL LEDGER / {profile.code}</p>
-          <h2>开局禀赋</h2>
-          <div className="faction-opening__metrics">
-            <span><Cpu />算力 <strong>{faction.resources.compute.toFixed(1)}</strong></span>
-            <span><Database />数据 <strong>{faction.resources.data.toFixed(1)}</strong></span>
-            <span><ShieldCheck />稳定度 <strong>{faction.resources.stability.toFixed(1)}</strong></span>
-          </div>
-          <div className="faction-opening__arc">
-            <span>命脉 / {route.lifeline}<strong>{arc.lifeline.toFixed(0)}</strong></span>
-            <span>隐患 / {route.liability}<strong>{arc.liability.toFixed(0)}</strong></span>
-          </div>
+          <h2>治理基线</h2>
+          <section className="faction-opening__ledger-group">
+            <h3>初始资源</h3>
+            <div className="faction-opening__metrics">
+              <span><Cpu />算力 <strong>{faction.resources.compute.toFixed(1)}</strong></span>
+              <span><Database />数据 <strong>{faction.resources.data.toFixed(1)}</strong></span>
+              <span><ShieldCheck />稳定度 <strong>{faction.resources.stability.toFixed(1)}</strong></span>
+            </div>
+          </section>
+          <section className="faction-opening__ledger-group faction-opening__ledger-group--arc">
+            <h3>长期轨迹</h3>
+            <div className="faction-opening__arc">
+              <span>命脉 / {route.lifeline}<strong>{arc.lifeline.toFixed(0)}</strong></span>
+              <span>隐患 / {route.liability}<strong>{arc.liability.toFixed(0)}</strong></span>
+            </div>
+          </section>
         </aside>
       </div>
     </main>
