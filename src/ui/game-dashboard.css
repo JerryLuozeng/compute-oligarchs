@@ -1,7 +1,7 @@
 .dashboard-shell {
-  --dashboard-bg: #0a0b0a;
-  --dashboard-panel: #111310;
-  --dashboard-border: rgb(191 193 184 / 0.22);
+  --dashboard-bg: var(--terminal-bg);
+  --dashboard-panel: var(--terminal-surface);
+  --dashboard-border: var(--terminal-border);
   position: relative;
   display: grid;
   height: 100dvh;
@@ -11,7 +11,7 @@
   overflow: hidden;
   isolation: isolate;
   padding: 0 20px 10px;
-  color: #e5e4dc;
+  color: var(--terminal-text);
   background: var(--dashboard-bg);
 }
 
@@ -31,7 +31,9 @@
 .dashboard-scanline { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
 .dashboard-noise { background-image: radial-gradient(rgb(255 255 255 / 0.08) 0.6px, transparent 0.6px); background-size: 6px 6px; opacity: 0.025; }
 .dashboard-scanline { height: 12vh; background: linear-gradient(transparent, rgb(166 174 166 / 0.04), transparent); opacity: 0; transform: translateY(-100%); }
-.glitch-enabled .dashboard-scanline { animation: dashboard-scan 12s linear infinite; opacity: 1; }
+.glitch-enabled.drift-warning .dashboard-scanline,
+.glitch-enabled.drift-critical .dashboard-scanline { animation: dashboard-scan 12s linear infinite; opacity: 1; }
+.drift-critical .dashboard-noise { opacity: 0.045; }
 
 .dashboard-header,
 .faction-grid,
