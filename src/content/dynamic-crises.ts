@@ -263,9 +263,11 @@ export const getDynamicCrisisDecisionLabel = (
 
 const toRuntimeCrisis = (
   definition: DynamicCrisisDefinition,
-  assessment: CrisisAssessment
+  assessment: CrisisAssessment,
+  playerFactionId: FactionId
 ): RuntimeGameEvent => ({
   id: definition.id,
+  faction: playerFactionId,
   origin: "dynamic",
   theme: definition.theme,
   title: definition.title,
@@ -293,5 +295,5 @@ export const findTriggeredDynamicCrisis = (
     .sort((left, right) => right.assessment.score - left.assessment.score)[0];
   return candidate === undefined
     ? undefined
-    : toRuntimeCrisis(candidate.definition, candidate.assessment);
+    : toRuntimeCrisis(candidate.definition, candidate.assessment, context.playerFactionId);
 };

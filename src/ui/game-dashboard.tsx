@@ -247,7 +247,7 @@ export function GameDashboard({
           policyState: policyLegacyState,
           advisorTrust,
           advisorRelationships: advisorRelationshipState
-        }, resolvedEventIds) ?? findTriggeredEvent(state, resolvedEventIds) ?? null
+        }, resolvedEventIds) ?? findTriggeredEvent(state, resolvedEventIds, selectedFactionId) ?? null
       : null;
     setEnding(nextEnding);
     setActiveEvent(nextEvent);
