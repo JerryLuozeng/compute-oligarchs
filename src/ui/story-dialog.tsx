@@ -10,6 +10,12 @@ import { getDecisionImpacts } from "./time-flow";
 import "./event-dialog.css";
 import "./story-dialog.css";
 
+const advisorSignalContext: Readonly<Record<AdvisorBriefing["signal"], string>> = {
+  open: "信息来源完整",
+  partial: "存在保留信息",
+  "model-mediated": "受模型漂移影响"
+};
+
 function StoryImpactPanel({
   choice,
   lifelineLabel,
@@ -61,7 +67,7 @@ function StoryImpactPanel({
           <TimerReset /> {ready ? "时间线已更新" : "正在写入时间线..."}
         </span>
         <button ref={continueRef} type="button" disabled={!ready} onClick={onContinue}>
-          结束本季度 <ArrowRight />
+          完成本季度结算 <ArrowRight />
         </button>
       </footer>
     </div>
@@ -148,7 +154,14 @@ export function StoryDialog({
                 <article key={briefing.advisor.id}>
                   <header>
                     <span>{briefing.advisor.name}<small>{briefing.advisor.role}</small></span>
-                    <strong>{getAdvisorSignalLabel(briefing.signal)}</strong>
+                    <strong
+                      className={`story-dialog__signal story-dialog__signal--${briefing.signal}`}
+                      title={advisorSignalContext[briefing.signal]}
+                    >
+                      <i aria-hidden="true" />
+                      <span>{getAdvisorSignalLabel(briefing.signal)}</span>
+                      <small>{advisorSignalContext[briefing.signal]}</small>
+                    </strong>
                   </header>
                   <p>{briefing.message}</p>
                   {briefing.evidence === undefined ? null : <blockquote>{briefing.evidence}</blockquote>}
@@ -167,9 +180,13 @@ export function StoryDialog({
         </div>
         {selectedChoice === null ? (
           <div className="event-dialog__options" aria-label="剧情决策">
-            {event.options.map((choice) => (
+            <div className="story-dialog__decision-bar">
+              <strong>决策选项</strong>
+              <span>选择将写入政策记录，并影响后续时间线</span>
+            </div>
+            {event.options.map((choice, index) => (
               <button type="button" key={choice.id} onClick={() => onChoose(choice)}>
-                <span>OPTION {choice.id}</span>
+                <span>决策 {String.fromCharCode(65 + index)}</span>
                 <strong>{choice.text}</strong>
                 {choice.advisorId === undefined || choice.advisorAdvice === undefined ? null : (
                   <small>
