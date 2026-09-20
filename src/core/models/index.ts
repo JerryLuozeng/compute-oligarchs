@@ -13,7 +13,9 @@ export type {
   SovereignAttributes,
   SovereignFaction
 } from "./faction";
-export type { FactionId, CollectionMode, TileId } from "./ids";
+export { infrastructureRegionIds } from "./ids";
+export type { FactionId, InfrastructureRegionId } from "./ids";
 export type { GameState } from "./game-state";
-export { initialFactions, initialGameState, initialTiles } from "./initial-state";
-export type { Tile } from "./tile";
+export { initialFactions, initialGameState, initialInfrastructureRegions } from "./initial-state";
+export type { InfrastructureKind, InfrastructureRegion } from "./infrastructure-region";
+export { getPowerBalance } from "./infrastructure-region";

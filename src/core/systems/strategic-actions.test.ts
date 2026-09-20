@@ -21,36 +21,45 @@ describe("strategic actions", () => {
     const active = beginStrategicActionPhase(createStrategicActionState(), 1);
     const result = executeStrategicAction(initialGameState, active, "consortium", {
       type: "investigate",
-      tileId: "wasteland"
+      regionId: "region-28"
     });
     expect(result.gameState).toBe(initialGameState);
     expect(result.actionState.pointsRemaining).toBe(2);
-    expect(result.actionState.investigatedTileIds).toEqual(["wasteland"]);
+    expect(result.actionState.investigatedRegionIds).toEqual(["region-28"]);
   });
 
-  it("trades current compute for future output and pressure", () => {
+  it("trades current compute for future infrastructure and pressure", () => {
     const active = beginStrategicActionPhase(createStrategicActionState(), 2);
+    const before = initialGameState.infrastructureRegions.find((region) => region.id === "region-05")!;
     const result = executeStrategicAction(initialGameState, active, "consortium", {
       type: "invest",
-      tileId: "glass-tower"
+      regionId: "region-05"
     });
     const player = result.gameState.factions.find((faction) => faction.id === "consortium");
-    const tile = result.gameState.tiles.find((candidate) => candidate.id === "glass-tower");
+    const region = result.gameState.infrastructureRegions.find((candidate) => candidate.id === "region-05")!;
     expect(player?.resources.compute).toBe(74);
-    expect(tile).toMatchObject({ computeOutput: 26, dataOutput: 9, modelDrift: 6.75 });
+    expect(region.computeCapacity).toBeCloseTo(before.computeCapacity + 2);
+    expect(region.powerGeneration).toBeCloseTo(before.powerGeneration + 0.4);
+    expect(region.powerDemand).toBeCloseTo(before.powerDemand + 1.4);
+    expect(region.dataProduction).toBeCloseTo(before.dataProduction + 0.5);
+    expect(region.modelDrift).toBeCloseTo(before.modelDrift + 0.75);
     expect(result.actionState.history[0]?.pressureTags).toContain("data-demand");
   });
 
-  it("audits drift at the cost of data and immediate output", () => {
+  it("audits drift at the cost of data and immediate capacity", () => {
     const active = beginStrategicActionPhase(createStrategicActionState(), 2);
+    const before = initialGameState.infrastructureRegions.find((region) => region.id === "region-20")!;
     const result = executeStrategicAction(initialGameState, active, "labor_union", {
       type: "audit",
-      tileId: "annotation-city"
+      regionId: "region-20"
     });
     const player = result.gameState.factions.find((faction) => faction.id === "labor_union");
-    const tile = result.gameState.tiles.find((candidate) => candidate.id === "annotation-city");
+    const region = result.gameState.infrastructureRegions.find((candidate) => candidate.id === "region-20")!;
     expect(player?.resources.data).toBe(80);
-    expect(tile).toMatchObject({ computeOutput: 2, modelDrift: 6, stability: 51 });
+    expect(region.computeCapacity).toBeCloseTo(before.computeCapacity - 0.5);
+    expect(region.powerDemand).toBeCloseTo(before.powerDemand - 0.5);
+    expect(region.modelDrift).toBeCloseTo(Math.max(0, before.modelDrift - 2));
+    expect(region.stability).toBeCloseTo(Math.min(100, before.stability + 3));
     expect(result.gameState.globalModelDrift).toBeCloseTo(7.8);
   });
 
@@ -58,11 +67,11 @@ describe("strategic actions", () => {
     const active = beginStrategicActionPhase(createStrategicActionState(), 1);
     const afterInvest = executeStrategicAction(initialGameState, active, "consortium", {
       type: "invest",
-      tileId: "glass-tower"
+      regionId: "region-05"
     });
     const rejected = executeStrategicAction(afterInvest.gameState, afterInvest.actionState, "consortium", {
       type: "audit",
-      tileId: "glass-tower"
+      regionId: "region-05"
     });
     expect(rejected.error).toBe("insufficient-points");
     expect(rejected.gameState).toBe(afterInvest.gameState);
@@ -75,7 +84,7 @@ describe("strategic actions", () => {
     expect(isStrategicActionState({ ...active, pointsRemaining: 9 })).toBe(false);
     expect(isStrategicActionState({
       ...active,
-      history: [{ id: "bad", turn: 1, type: "conquer", targetId: "wasteland", pressureTags: [] }]
+      history: [{ id: "bad", turn: 1, type: "conquer", targetId: "region-28", pressureTags: [] }]
     })).toBe(false);
   });
 });

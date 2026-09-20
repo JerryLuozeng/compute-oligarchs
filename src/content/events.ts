@@ -1,4 +1,4 @@
-import type { FactionId, TileId } from "@/core/models";
+import type { FactionId, InfrastructureRegionId } from "@/core/models";
 
 export type EventTheme =
   | "labor_struggle"
@@ -26,8 +26,8 @@ export type EventCondition =
       value: number;
     }
   | {
-      kind: "tile_metric";
-      tile: TileId;
+      kind: "region_metric";
+      region: InfrastructureRegionId;
       metric: "stability" | "modelDrift";
       operator: "above" | "below";
       value: number;
@@ -139,8 +139,8 @@ export const gameEvents: readonly GameEvent[] = [
           value: 0.45
         },
         {
-          kind: "tile_metric",
-          tile: "old-town",
+          kind: "region_metric",
+          region: "region-20",
           metric: "stability",
           operator: "below",
           value: 55
@@ -291,8 +291,8 @@ export const gameEvents: readonly GameEvent[] = [
           value: 20
         },
         {
-          kind: "tile_metric",
-          tile: "government-city",
+          kind: "region_metric",
+          region: "region-15",
           metric: "modelDrift",
           operator: "above",
           value: 4
@@ -336,8 +336,8 @@ export const gameEvents: readonly GameEvent[] = [
       description: "废土漂移严重，全球新鲜数据储备出现紧张。",
       all: [
         {
-          kind: "tile_metric",
-          tile: "wasteland",
+          kind: "region_metric",
+          region: "region-28",
           metric: "modelDrift",
           operator: "above",
           value: 15

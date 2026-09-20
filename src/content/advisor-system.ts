@@ -198,12 +198,12 @@ export const createAdvisorBriefings = (
   const relationshipNote = priorRejection === undefined
     ? undefined
     : "上一次我的意见被放在了一边，这次我只说能够确认的部分。";
-  const investigated = actions.investigatedTileIds.length > 0;
+  const investigated = actions.investigatedRegionIds.length > 0;
   const cause = latestCause(pressureState, disposition.interest);
   const evidence = trust[advisor.id] >= 20 && cause !== undefined
     ? `内部记录指向：${cause}。`
     : investigated
-      ? `调查记录覆盖 ${actions.investigatedTileIds.length} 个地区，但尚不足以排除利益偏差。`
+      ? `调查记录覆盖 ${actions.investigatedRegionIds.length} 个基础设施区域，但尚不足以排除利益偏差。`
       : undefined;
   const message = [
     `${interestNames[disposition.interest]}方向${pressureDescriptions[level]}。`,

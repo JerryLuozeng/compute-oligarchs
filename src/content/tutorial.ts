@@ -32,15 +32,15 @@ export const tutorialSteps: readonly TutorialStep[] = [
     id: "world-map",
     target: "world-map",
     label: "世界地图",
-    title: "每块土地都在生产",
-    description: "颜色代表地块当前的控制势力。结束引导后点击任意地块，可以查看当地的算力产出、数据产出、稳定度与模型漂移。"
+    title: "基础设施决定谁能运转",
+    description: "颜色代表基础设施区域当前的控制势力。结束引导后点击任意区域，可以查看算力容量、发电能力、用电负荷与数据劳动状态。"
   },
   {
     id: "turn-control",
     target: "turn-control",
     label: "时间推进",
     title: "所有代价都在结算时出现",
-    description: "推进到下一季度后，剧情会主动出现。完成决策并看完影响结算，时间才会继续向前；地块产出、模型消耗、事件与结局也会在这条时间线上依次发生。"
+    description: "推进到下一季度后，剧情会主动出现。完成决策并看完影响结算，时间才会继续向前；基础设施产出、模型消耗、事件与结局也会在这条时间线上依次发生。"
   },
   {
     id: "faction-roster",

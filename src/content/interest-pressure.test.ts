@@ -55,7 +55,7 @@ describe("interest pressure", () => {
     const active = beginStrategicActionPhase(createStrategicActionState(), 1);
     const action = executeStrategicAction(initialGameState, active, "consortium", {
       type: "mobilize",
-      tileId: "glass-tower"
+      regionId: "region-05"
     });
     const policies = applyPolicyChoice(createPolicyLegacyState(), "CONSORTIUM-T1", "A", 1);
     const settlement = settleInterestPressures(

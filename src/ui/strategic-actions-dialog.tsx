@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Activity, ArrowRight, Crosshair, Gauge, X } from "lucide-react";
 import type { GameState } from "@/core/models/game-state";
-import type { FactionId, TileId } from "@/core/models/ids";
+import type { FactionId, InfrastructureRegionId } from "@/core/models/ids";
 import type {
   StrategicAction,
   StrategicActionState,
@@ -29,7 +29,9 @@ export function StrategicActionsDialog({
   onClose: () => void;
 }) {
   const [selectedType, setSelectedType] = useState<StrategicActionType>("investigate");
-  const [tileId, setTileId] = useState<TileId>(gameState.tiles[0]?.id ?? "glass-tower");
+  const [regionId, setRegionId] = useState<InfrastructureRegionId>(
+    gameState.infrastructureRegions[0]?.id ?? "region-01"
+  );
   const otherFactions = useMemo(
     () => gameState.factions.filter((faction) => faction.id !== playerFactionId),
     [gameState.factions, playerFactionId]
@@ -39,17 +41,17 @@ export function StrategicActionsDialog({
     ?? strategicActionDefinitions[0];
   const canExecute = actionState.pointsRemaining >= definition.cost;
   const currentRecords = actionState.history.filter((record) => record.turn === actionState.turn);
-  const selectedTile = gameState.tiles.find((tile) => tile.id === tileId);
+  const selectedRegion = gameState.infrastructureRegions.find((region) => region.id === regionId);
   const selectedFaction = gameState.factions.find((faction) => faction.id === factionId);
 
-  const getTargetName = (type: StrategicActionType, targetId: TileId | FactionId): string => {
+  const getTargetName = (type: StrategicActionType, targetId: InfrastructureRegionId | FactionId): string => {
     if (type === "negotiate") return getFactionProfile(targetId as FactionId).name;
-    return gameState.tiles.find((tile) => tile.id === targetId)?.name ?? targetId;
+    return gameState.infrastructureRegions.find((region) => region.id === targetId)?.name ?? targetId;
   };
 
   const execute = () => {
-    onExecute(definition.target === "tile"
-      ? { type: selectedType as Exclude<StrategicActionType, "negotiate">, tileId }
+    onExecute(definition.target === "region"
+      ? { type: selectedType as Exclude<StrategicActionType, "negotiate">, regionId }
       : { type: "negotiate", factionId });
   };
 
@@ -91,10 +93,12 @@ export function StrategicActionsDialog({
             <h3>目标与代价</h3>
             <p className="strategic-actions-dialog__tradeoff"><Activity /> {definition.tradeoff}</p>
             <label>
-              <span>{definition.target === "tile" ? "目标地区" : "协商对象"}</span>
-              {definition.target === "tile" ? (
-                <select value={tileId} onChange={(event) => setTileId(event.target.value as TileId)}>
-                  {gameState.tiles.map((tile) => <option value={tile.id} key={tile.id}>{tile.name}</option>)}
+              <span>{definition.target === "region" ? "目标基础设施区域" : "协商对象"}</span>
+              {definition.target === "region" ? (
+                <select value={regionId} onChange={(event) => setRegionId(event.target.value as InfrastructureRegionId)}>
+                  {gameState.infrastructureRegions.map((region) => (
+                    <option value={region.id} key={region.id}>{region.name}</option>
+                  ))}
                 </select>
               ) : (
                 <select value={factionId} onChange={(event) => setFactionId(event.target.value as FactionId)}>
@@ -104,12 +108,12 @@ export function StrategicActionsDialog({
                 </select>
               )}
             </label>
-            {definition.target === "tile" && selectedTile !== undefined ? (
-              <dl className="strategic-actions-dialog__target" aria-label={`${selectedTile.name}当前状态`}>
-                <div><dt>算力产出</dt><dd>{selectedTile.computeOutput.toFixed(1)}</dd></div>
-                <div><dt>数据产出</dt><dd>{selectedTile.dataOutput.toFixed(1)}</dd></div>
-                <div><dt>稳定度</dt><dd>{selectedTile.stability.toFixed(1)}</dd></div>
-                <div><dt>模型漂移</dt><dd>{selectedTile.modelDrift.toFixed(1)}</dd></div>
+            {definition.target === "region" && selectedRegion !== undefined ? (
+              <dl className="strategic-actions-dialog__target" aria-label={`${selectedRegion.name}当前状态`}>
+                <div><dt>算力容量</dt><dd>{selectedRegion.computeCapacity.toFixed(1)}</dd></div>
+                <div><dt>发电 / 负荷</dt><dd>{selectedRegion.powerGeneration.toFixed(1)} / {selectedRegion.powerDemand.toFixed(1)}</dd></div>
+                <div><dt>稳定度</dt><dd>{selectedRegion.stability.toFixed(1)}</dd></div>
+                <div><dt>模型漂移</dt><dd>{selectedRegion.modelDrift.toFixed(1)}</dd></div>
               </dl>
             ) : selectedFaction === undefined ? null : (
               <dl className="strategic-actions-dialog__target" aria-label={`${getFactionProfile(selectedFaction.id).name}当前资源`}>
