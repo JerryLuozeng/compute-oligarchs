@@ -76,7 +76,7 @@ export const gameEvents: readonly GameEvent[] = [
     policyText:
       "承认数据并非自然生成的矿藏。每一次分类、纠错与拒绝，都是活劳动进入模型的痕迹。没有劳动者的组织化 consent，数据不得转化为私人算力资本。",
     trigger: {
-      description: "数据劳工联合体的数据充足，但组织度尚未完成集中。",
+      description: "星火工联的数据充足，但组织度尚未完成集中。",
       all: [
         { kind: "turn_at_least", value: 2 },
         {
@@ -281,7 +281,7 @@ export const gameEvents: readonly GameEvent[] = [
     policyText:
       "个人数据不是行政机关或平台的无主财产。立即停止影子建模，由劳动者与社区共同审计数据用途、保存期限和再分配方式。",
     trigger: {
-      description: "主权国家监控指数高企，政务城存在漂移压力。",
+      description: "寰盟监控指数高企，政务城存在漂移压力。",
       all: [
         {
           kind: "faction_attribute",

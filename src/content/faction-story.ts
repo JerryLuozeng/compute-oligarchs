@@ -27,7 +27,7 @@ export type AdvisorTrustState = Readonly<Record<AdvisorId, number>>;
 export const advisors: readonly AdvisorProfile[] = [
   { id: "aditya", factionId: "consortium", name: "阿迪蒂亚·梅赫塔", role: "首席运营官", principle: "稳运转" },
   { id: "park", factionId: "consortium", name: "朴世勋", role: "公关总监", principle: "管舆论" },
-  { id: "manuela", factionId: "sovereign", name: "曼努埃拉·科雷亚", role: "管委会主席", principle: "讲理想" },
+  { id: "manuela", factionId: "sovereign", name: "曼努埃拉·科雷亚", role: "寰盟理事会主席", principle: "讲理想" },
   { id: "osman", factionId: "sovereign", name: "奥斯曼·亚尔琴", role: "首席审计官", principle: "讲证据" },
   { id: "marta", factionId: "labor_union", name: "玛尔塔·索萨", role: "总协调", principle: "稳扎稳打" },
   { id: "tanya", factionId: "labor_union", name: "塔尼娅·卡明斯基", role: "红隼小队队长", principle: "要有行动" },
@@ -66,7 +66,7 @@ export const applyAdvisorTrust = (
 
 const perspectiveByFaction: Readonly<Record<FactionId, string>> = {
   consortium: "天穹调度台正在估算这场风波对资源收益与控制力的影响。",
-  sovereign: "管委会必须判断，这场风波会让规则更有分量，还是再次陷入空转。",
+  sovereign: "寰盟必须判断，这场风波会让规则更有分量，还是再次陷入成员国拉锯。",
   labor_union: "星火的联络点正在确认，这个决定会怎样落到一线数据工作者身上。",
   independent_labs: "棱镜社正在追踪这场风波会不会扩大开放空间，也放大失控风险。",
   socialist_power: "赤衡的调度部门正在衡量，长期建设与眼前民生能否同时守住。"

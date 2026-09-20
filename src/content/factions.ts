@@ -15,7 +15,7 @@ export const factionProfiles: readonly FactionProfile[] = [
   {
     id: "consortium",
     code: "CORP-01",
-    name: "天穹财阀",
+    name: "天穹公司",
     summary: "手握海量云端服务器的巨型商业集团，依靠庞大人力源源不断生产数据，优先追逐资源收益。",
     mandate: "扩大云端版图，把每一份数据和算力都变成可持续收益。",
     strengths: ["开局算力资源丰厚", "数据产出稳定", "资金储备充足"],
@@ -25,7 +25,7 @@ export const factionProfiles: readonly FactionProfile[] = [
   {
     id: "sovereign",
     code: "STATE-02",
-    name: "联邦管委会",
+    name: "寰盟",
     summary: "跨区域公共治理主体，依靠规则约束算力与数据流动，优先维持整个数字系统稳定。",
     mandate: "用规则和公共调度守住数字社会的基本秩序。",
     strengths: ["整体稳定性上限高", "抵御突发危机能力强", "可以出台管制政策规避风险"],
@@ -35,7 +35,7 @@ export const factionProfiles: readonly FactionProfile[] = [
   {
     id: "labor_union",
     code: "LABOR-03",
-    name: "星火劳工团",
+    name: "星火工联",
     summary: "由一线数据工作者组成，掌握原始数据生产源头，希望争取更好的生存与劳动条件。",
     mandate: "让生产数据的一线劳动者获得应有的报酬与决定权。",
     strengths: ["获取原始数据能力强", "劳工相关事件更容易获得有利选项", "稳定性容错空间更大"],

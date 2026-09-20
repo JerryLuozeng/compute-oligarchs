@@ -30,7 +30,7 @@ const statusText: Record<FactionId, Record<"brightest" | "steady" | "neglected",
   sovereign: {
     brightest: "听证会座无虚席，审计官的笔记本写满了。规则有了牙齿，也有了拖延。",
     steady: "会议照常，文件照常，没人满意，也没人拍桌子。",
-    neglected: "管委会的灯几乎熄了。曼努埃拉在会议室里站了很久，没有说话。"
+    neglected: "寰盟的灯几乎熄了。曼努埃拉在会议室里站了很久，没有说话。"
   },
   labor_union: {
     brightest: "工棚里第一次亮着暖气。新面孔越来越多，其中也有陌生的眼睛。",

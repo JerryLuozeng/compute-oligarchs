@@ -5,8 +5,8 @@ import type { FactionId, InfrastructureRegionId } from "./ids";
 
 export const initialFactions: readonly Faction[] = [
   { id: "consortium", name: "财团", resources: { compute: 82, data: 68, stability: 58 }, exclusive: { mythHeat: 68, mythDebt: 12, informedLayerRatio: 0.25 } },
-  { id: "sovereign", name: "主权国家", resources: { compute: 42, data: 56, stability: 65 }, exclusive: { captureLevel: 38, monitoringIndex: 24, taxCapacity: 52 } },
-  { id: "labor_union", name: "数据劳工联合体", resources: { compute: 12, data: 86, stability: 47 }, exclusive: { organization: 46, awareness: 0.42, computeAccess: 0.08 } },
+  { id: "sovereign", name: "寰盟", resources: { compute: 42, data: 56, stability: 65 }, exclusive: { captureLevel: 38, monitoringIndex: 24, taxCapacity: 52 } },
+  { id: "labor_union", name: "星火工联", resources: { compute: 12, data: 86, stability: 47 }, exclusive: { organization: 46, awareness: 0.42, computeAccess: 0.08 } },
   { id: "independent_labs", name: "独立实验室", resources: { compute: 18, data: 34, stability: 54 }, exclusive: { reputation: 58, researchFailures: 3, rentedCompute: 16 } },
   { id: "socialist_power", name: "社会主义强国", resources: { compute: 64, data: 61, stability: 62 }, exclusive: { publicComputeRatio: 0.34, bureaucratization: 28, blockadeResistance: 41 } }
 ];
