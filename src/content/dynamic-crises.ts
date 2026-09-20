@@ -221,7 +221,7 @@ const dynamicCrisisDefinitions: readonly DynamicCrisisDefinition[] = [
       const audits = context.actionState.history.filter((record) =>
         record.turn > context.gameState.turn - 4 && record.type === "audit"
       ).length;
-      const investigated = context.actionState.investigatedTileIds.length;
+      const investigated = context.actionState.investigatedRegionIds.length;
       const provenanceDeferred = hasPolicyTag(context.policyState, "provenance-deferred")
         || hasPolicyTag(context.policyState, "resource-first");
       return {

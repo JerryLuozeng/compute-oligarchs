@@ -32,8 +32,8 @@
 .drift-severe .dashboard-noise { opacity: 0.045; }
 .drift-critical .dashboard-noise { opacity: 0.08; }
 .motion-enabled.drift-trace .dashboard-scanline, .motion-enabled.drift-unstable .dashboard-scanline, .motion-enabled.drift-severe .dashboard-scanline, .motion-enabled.drift-critical .dashboard-scanline { animation: dashboard-scan 10s linear infinite; }
-.motion-enabled.drift-unstable .game-map-stage .map-tile__signal { animation: drift-node 2.8s steps(2, end) infinite; }
-.motion-enabled.drift-severe .game-map-stage .map-tile, .motion-enabled.drift-critical .game-map-stage .map-tile { animation: drift-node 1.6s steps(2, end) infinite; }
+.motion-enabled.drift-unstable .game-map-stage canvas { animation: drift-node 2.8s steps(2, end) infinite; }
+.motion-enabled.drift-severe .game-map-stage canvas, .motion-enabled.drift-critical .game-map-stage canvas { animation: drift-node 1.6s steps(2, end) infinite; }
 .drift-trace .command-readout--drift strong, .drift-unstable .command-readout--drift strong, .drift-severe .command-readout--drift strong, .drift-critical .command-readout--drift strong { color: var(--drift-accent); text-shadow: var(--drift-offset) 0 var(--ds-color-fault-cyan), calc(var(--drift-offset) * -1) 0 var(--ds-color-fault-magenta); }
 .drift-severe .command-context strong, .drift-severe .game-map-stage, .drift-critical .command-context strong, .drift-critical .game-map-stage { clip-path: polygon(0 0, 100% 0, 100% 46%, 99.5% 46%, 99.5% 52%, 100% 52%, 100% 100%, 0 100%); }
 .drift-critical .dashboard-header { box-shadow: inset 4px 0 var(--ds-color-fault-magenta), inset -4px 0 var(--ds-color-fault-cyan); }
@@ -106,7 +106,7 @@
 .game-action span { display: none; }
 .game-map-stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--dashboard-border); border-top: 5px solid var(--ds-indigo-500); padding: 0 12px 10px; background: var(--ds-color-panel); }
 .game-map-stage::before { position: absolute; top: 12px; right: 14px; z-index: 2; padding: 5px 8px; color: var(--ds-color-text-dim); background: var(--ds-color-panel); content: "SOCIAL INFRASTRUCTURE NETWORK"; font: 700 7px/1 var(--font-data); letter-spacing: 0.12em; pointer-events: none; }
-.game-map-stage .map-section { width: 100%; height: 100%; margin-top: 0; }
+.game-map-stage .infrastructure-map { width: 100%; height: 100%; }
 
 .faction-roster { display: grid; min-height: 0; grid-template-columns: 180px minmax(0, 1fr); border: 1px solid var(--dashboard-border); background: var(--dashboard-panel); }
 .faction-roster__heading { display: flex; align-items: center; border-right: 1px solid var(--dashboard-border); border-left: 5px solid var(--ds-red-700); padding: 0 14px; }

@@ -71,7 +71,7 @@ import { ChapterSettlementDialog } from "./chapter-settlement-dialog";
 import { EndingDialog } from "./ending-dialog";
 import { EventDialog } from "./event-dialog";
 import { LampAllocationDialog, LampStatusBoard } from "./lamp-allocation";
-import { MapTiles } from "./map-tiles";
+import { InfrastructureMap } from "./infrastructure-map";
 import { SaveGameDialog } from "./home-panels";
 import {
   createGameSession,
@@ -580,7 +580,7 @@ export function GameDashboard({
         </aside>
 
         <div className="game-map-stage" data-tutorial="world-map">
-          <MapTiles tiles={gameState.tiles} />
+          <InfrastructureMap regions={gameState.infrastructureRegions} factions={gameState.factions} />
         </div>
       </section>
 

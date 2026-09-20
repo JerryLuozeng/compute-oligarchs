@@ -9,6 +9,7 @@
     "test": "vitest run",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
+    "narrative:export": "node scripts/export-narrative-bundle.mjs",
     "tauri": "tauri"
   },
   "dependencies": {

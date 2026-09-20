@@ -53,6 +53,32 @@ describe("readSaveSlots", () => {
     expect(slots.every((slot) => slot.status === "empty")).toBe(true);
   });
 
+  it("migrates a legacy six-tile world without losing player progress", () => {
+    const legacyState = {
+      turn: 8,
+      factions: initialGameState.factions,
+      tiles: [{ id: "glass-tower" }],
+      globalModelDrift: 42,
+      globalStability: 37
+    };
+    const slots = readSaveSlots(createStorage({
+      [`${SAVE_STORAGE_PREFIX}1`]: JSON.stringify({
+        version: 1,
+        savedAt: "2026-09-20T08:00:00.000Z",
+        selectedFactionId: "consortium",
+        gameState: legacyState
+      })
+    }));
+
+    expect(slots[0]?.status).toBe("ready");
+    expect(slots[0]?.savedGame?.session.gameState).toMatchObject({
+      turn: 8,
+      globalModelDrift: 42,
+      globalStability: 37
+    });
+    expect(slots[0]?.savedGame?.session.gameState.infrastructureRegions).toHaveLength(30);
+  });
+
   it("writes and restores a complete version seven session", () => {
     const entries: Record<string, string> = {};
     const session = createGameSession(initialGameState, "consortium");

@@ -1,0 +1,64 @@
+.infrastructure-map { display: grid; width: 100%; height: 100%; min-height: 0; grid-template-rows: auto 40px minmax(0, 1fr) 58px; padding-top: 8px; }
+.infrastructure-map__heading { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 18px; padding: 0 2px 8px; }
+.infrastructure-map__heading p { display: flex; align-items: center; gap: 6px; margin: 0 0 5px; color: var(--ds-ochre-400); font: 700 8px/1 var(--font-data); letter-spacing: 0.12em; }
+.infrastructure-map__heading p svg { width: 13px; }
+.infrastructure-map__heading h2 { margin: 0; font: 900 20px/1 var(--font-display); }
+.infrastructure-map__legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px 12px; }
+.infrastructure-map__legend span { --territory-color: var(--ds-paper-300); display: flex; align-items: center; gap: 5px; color: var(--terminal-text-muted); font: 700 8px/1 var(--font-data); }
+.infrastructure-map__legend i, .territory-ledger i { width: 7px; height: 7px; background: var(--territory-color); }
+.infrastructure-map__legend b { color: var(--territory-color); font-size: 9px; }
+.territory--consortium { --territory-color: var(--ds-lamp-industry); }
+.territory--sovereign { --territory-color: var(--ds-lamp-order); }
+.territory--labor { --territory-color: var(--ds-lamp-workshop); }
+.territory--labs { --territory-color: var(--ds-lamp-commons); }
+.territory--socialist { --territory-color: var(--ds-lamp-livelihood); }
+
+.infrastructure-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-block: 1px solid var(--terminal-border); }
+.infrastructure-summary > div { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; align-items: center; gap: 6px; border-right: 1px solid var(--terminal-border); padding: 0 10px; color: var(--terminal-text-muted); font: 700 8px/1 var(--font-data); }
+.infrastructure-summary > div:last-child { border-right: 0; }
+.infrastructure-summary svg { width: 12px; color: var(--ds-color-info); }
+.infrastructure-summary strong { color: var(--ds-paper-100); font-size: 10px; }
+.infrastructure-summary .is-alert svg, .infrastructure-summary .is-alert strong { color: var(--ds-color-danger); }
+
+.infrastructure-map__layout { display: grid; min-height: 0; grid-template-columns: minmax(0, 1fr) 250px; gap: 7px; padding-top: 7px; }
+.region-dossier { --assessment-color: var(--ds-color-stable); --territory-color: var(--ds-paper-300); min-height: 0; overflow: hidden; border: 1px solid var(--terminal-border); border-top: 5px solid var(--territory-color); padding: 13px; background: var(--terminal-surface); }
+.region-dossier--watch { --assessment-color: var(--ds-color-watch); }
+.region-dossier--critical { --assessment-color: var(--ds-color-danger); }
+.region-dossier__topline { display: flex; align-items: center; justify-content: space-between; color: var(--terminal-text-dim); font: 700 8px/1 var(--font-data); letter-spacing: 0.08em; }
+.region-dossier__status { display: flex; align-items: center; gap: 5px; color: var(--assessment-color); }
+.region-dossier__status i { width: 6px; height: 6px; background: currentColor; }
+.region-dossier h3 { margin: 14px 0 11px; font: 900 24px/0.95 var(--font-display); }
+.region-dossier dl { display: grid; gap: 6px; margin: 0; border-block: 1px solid var(--terminal-border); padding: 9px 0; }
+.region-dossier dl div { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 8px; }
+.region-dossier dt { color: var(--terminal-text-dim); font: 7px/1.4 var(--font-data); }
+.region-dossier dd { overflow: hidden; margin: 0; color: var(--ds-paper-100); font: 700 8px/1.4 var(--font-data); text-overflow: ellipsis; white-space: nowrap; }
+.region-dossier__metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 11px; background: var(--terminal-border); }
+.region-dossier__metric { display: grid; gap: 6px; padding: 9px; background: var(--terminal-surface-raised); }
+.region-dossier__metric span { display: flex; align-items: center; gap: 5px; color: var(--terminal-text-dim); font: 7px/1 var(--font-data); }
+.region-dossier__metric svg { width: 11px; color: var(--territory-color); }
+.region-dossier__metric strong { color: var(--ds-paper-100); font: 700 12px/1 var(--font-data); }
+.region-dossier__balance { display: flex; align-items: baseline; justify-content: space-between; margin-top: 11px; border-left: 4px solid var(--territory-color); padding: 7px 9px; color: var(--terminal-text-muted); background: var(--terminal-surface-raised); font: 700 8px/1 var(--font-data); }
+.region-dossier__balance strong { color: var(--territory-color); font-size: 15px; }
+.region-dossier__stability { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 11px; color: var(--terminal-text-dim); font: 700 8px/1 var(--font-data); }
+.region-dossier__stability strong { color: var(--ds-paper-100); }
+.region-dossier__stability > i { grid-column: 1 / -1; height: 3px; background: var(--terminal-border); }
+.region-dossier__stability b { display: block; height: 100%; background: var(--territory-color); }
+.region-dossier__assessment { margin: 10px 0 0; color: var(--assessment-color); font: 700 8px/1.4 var(--font-data); }
+
+.territory-ledger { display: grid; min-width: 0; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; margin-top: 7px; background: var(--terminal-border); }
+.territory-ledger article { --territory-color: var(--ds-paper-300); position: relative; display: grid; min-width: 0; grid-template-columns: 1fr auto; gap: 5px 8px; overflow: hidden; padding: 9px 10px 11px; background: var(--terminal-surface); }
+.territory-ledger span { display: flex; min-width: 0; align-items: center; gap: 6px; overflow: hidden; color: var(--terminal-text-muted); font: 700 8px/1 var(--font-data); text-overflow: ellipsis; white-space: nowrap; }
+.territory-ledger strong { color: var(--territory-color); font: 800 9px/1 var(--font-data); }
+.territory-ledger small { grid-column: 1 / -1; color: var(--terminal-text-dim); font: 7px/1 var(--font-data); }
+.territory-ledger article > b { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--territory-color); }
+
+@media (max-width: 980px) { .infrastructure-map__layout { grid-template-columns: minmax(0, 1fr) 220px; } .infrastructure-map__legend span { font-size: 0; } }
+@media (max-width: 720px) {
+  .infrastructure-map { min-height: 620px; grid-template-rows: auto 40px 470px auto; }
+  .infrastructure-map__heading { align-items: flex-start; flex-direction: column; }
+  .infrastructure-map__layout { grid-template-columns: 1fr; }
+  .region-dossier { min-height: 220px; }
+  .territory-ledger { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .territory-ledger article:last-child { grid-column: 1 / -1; }
+  .infrastructure-summary span { display: none; }
+}

@@ -28,8 +28,8 @@ describe("dynamic crises", () => {
       ...current.actionState,
       turn: 5,
       history: [
-        { id: "4-1-mobilize", turn: 4, type: "mobilize", targetId: "annotation-city", pressureTags: ["labor-pressure"] },
-        { id: "5-1-mobilize", turn: 5, type: "mobilize", targetId: "annotation-city", pressureTags: ["labor-pressure"] }
+        { id: "4-1-mobilize", turn: 4, type: "mobilize", targetId: "region-24", pressureTags: ["labor-pressure"] },
+        { id: "5-1-mobilize", turn: 5, type: "mobilize", targetId: "region-24", pressureTags: ["labor-pressure"] }
       ]
     };
     const crisis = findTriggeredDynamicCrisis({

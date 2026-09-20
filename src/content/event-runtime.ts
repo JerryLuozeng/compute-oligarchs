@@ -119,9 +119,9 @@ export const matchesEventCondition = (condition: EventCondition, state: GameStat
       const value = getFactionAttribute(faction, condition.attribute);
       return value !== undefined && compare(value, condition.operator, condition.value);
     }
-    case "tile_metric": {
-      const tile = state.tiles.find((candidate) => candidate.id === condition.tile);
-      return tile !== undefined && compare(tile[condition.metric], condition.operator, condition.value);
+    case "region_metric": {
+      const region = state.infrastructureRegions.find((candidate) => candidate.id === condition.region);
+      return region !== undefined && compare(region[condition.metric], condition.operator, condition.value);
     }
   }
 };

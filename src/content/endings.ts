@@ -139,7 +139,7 @@ const routeEndingCopies: Record<FactionId, Record<"success" | "compromise" | "tu
   sovereign: {
     success: { label: "SOVEREIGN / TRUST", title: "规则之网", description: "条例通过了，天穹低头了，也留了后手。世界没那么疯，也没那么亮。", dispatch: "奥斯曼把笔记本交给继任者：\"账，别断。\"" },
     compromise: { label: "SOVEREIGN / STALL", title: "有名无实", description: "文件很多，会议很多，掌声也很多。只是没人再看它们。", dispatch: "没有执行的规则，只是另一种安静的失信。" },
-    turning: { label: "SOVEREIGN / TURNING", title: "迟来的牙齿", description: "你终于让管委会咬了一口。有人说这是奇迹，有人说，这是灾难的开始。", dispatch: "权威第一次留下了齿痕，也第一次必须承担它的重量。" }
+    turning: { label: "SOVEREIGN / TURNING", title: "迟来的牙齿", description: "你终于让寰盟咬了一口。有人说这是奇迹，有人说，这是灾难的开始。", dispatch: "联盟第一次留下了齿痕，也第一次必须承担它的重量。" }
   },
   labor_union: {
     success: { label: "LABOR / SOLIDARITY", title: "星火不熄", description: "地下库里灯一盏一盏亮起，数据工第一次在自己的网络上写下自己的名字。", dispatch: "路还很长，但他们有了自己的钥匙，也有了自己的开会时间。" },

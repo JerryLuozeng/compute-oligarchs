@@ -4,17 +4,20 @@ import type { FactionId } from "../models/ids";
 
 const HIGH_STABILITY_THRESHOLD = 60;
 const COLLAPSE_STABILITY_THRESHOLD = 25;
-const HIGH_STABILITY_DATA_BONUS_CAP = 0.25;
 const LOW_STABILITY_OUTPUT_MULTIPLIER = 0.25;
-const DATA_PER_DRIFT_POINT = 10;
-const STABILITY_LOSS_PER_SHORTAGE_RATIO = 8;
-const GLOBAL_DRIFT_PER_SHORTAGE_RATIO = 4;
+const DATA_PER_DRIFT_POINT = 1.35;
+const STABILITY_LOSS_PER_DATA_SHORTAGE = 6;
+const STABILITY_LOSS_PER_POWER_SHORTAGE = 5;
+const DRIFT_PER_DATA_SHORTAGE = 3;
+const DRIFT_PER_POWER_SHORTAGE = 4;
 
-type FactionLedger = {
+interface FactionLedger {
   computeOutput: number;
   dataOutput: number;
   dataDemand: number;
-};
+  powerShortageTotal: number;
+  regionCount: number;
+}
 
 const clamp = (value: number, minimum: number, maximum: number): number =>
   Math.min(maximum, Math.max(minimum, value));
@@ -22,107 +25,90 @@ const clamp = (value: number, minimum: number, maximum: number): number =>
 const createLedger = (): FactionLedger => ({
   computeOutput: 0,
   dataOutput: 0,
-  dataDemand: 0
+  dataDemand: 0,
+  powerShortageTotal: 0,
+  regionCount: 0
 });
 
 const createLedgers = (factions: readonly Faction[]): Map<FactionId, FactionLedger> =>
   new Map(factions.map((faction) => [faction.id, createLedger()]));
 
-const productionMultiplier = (stability: number): number => {
-  if (stability < COLLAPSE_STABILITY_THRESHOLD) {
-    return LOW_STABILITY_OUTPUT_MULTIPLIER;
-  }
-
-  if (stability <= HIGH_STABILITY_THRESHOLD) {
-    return 1;
-  }
-
-  return 1 +
-    Math.min(
-      HIGH_STABILITY_DATA_BONUS_CAP,
-      (stability - HIGH_STABILITY_THRESHOLD) / 160
-    );
+const stabilityMultiplier = (stability: number): number => {
+  if (stability < COLLAPSE_STABILITY_THRESHOLD) return LOW_STABILITY_OUTPUT_MULTIPLIER;
+  if (stability <= HIGH_STABILITY_THRESHOLD) return 1;
+  return 1 + Math.min(0.2, (stability - HIGH_STABILITY_THRESHOLD) / 200);
 };
 
-const cloneFaction = <T extends Faction>(faction: T, ledger: FactionLedger): T => ({
-  ...faction,
-  resources: {
-    compute: faction.resources.compute + ledger.computeOutput,
-    data: faction.resources.data + ledger.dataOutput,
-    stability: faction.resources.stability
-  },
-  exclusive: { ...faction.exclusive }
-}) as T;
-
 /**
- * Resolve one quarter of production and model maintenance without mutating
- * the input state. The simplified M1 model treats each controlled tile as a
- * model workload whose drift requires fresh data from the controlling faction.
+ * Settle one period of infrastructure production. Compute only becomes usable
+ * when the regional grid can power it; power deficits also propagate into
+ * stability loss and model drift instead of behaving as a cosmetic metric.
  */
 export const tick = (state: GameState): GameState => {
   const ledgers = createLedgers(state.factions);
 
-  for (const tile of state.tiles) {
-    if (tile.controllingFaction === "commons" || tile.controllingFaction === "none") {
-      continue;
-    }
+  for (const region of state.infrastructureRegions) {
+    const ledger = ledgers.get(region.controllingFaction);
+    if (ledger === undefined) continue;
 
-    const ledger = ledgers.get(tile.controllingFaction);
-    if (ledger === undefined) {
-      continue;
-    }
-
-    const multiplier = productionMultiplier(tile.stability);
-    ledger.computeOutput += tile.computeOutput * multiplier;
-    ledger.dataOutput += tile.dataOutput * multiplier;
-    ledger.dataDemand += tile.modelDrift * DATA_PER_DRIFT_POINT;
+    const powerRatio = region.powerDemand <= 0
+      ? 1
+      : Math.min(1, region.powerGeneration / region.powerDemand);
+    const powerShortage = 1 - powerRatio;
+    const multiplier = stabilityMultiplier(region.stability);
+    ledger.computeOutput += region.computeCapacity * powerRatio * multiplier;
+    ledger.dataOutput += region.dataProduction * multiplier;
+    ledger.dataDemand += region.modelDrift * DATA_PER_DRIFT_POINT;
+    ledger.powerShortageTotal += powerShortage;
+    ledger.regionCount += 1;
   }
 
-  let totalShortageRatio = 0;
-  let shortageCount = 0;
+  let globalDataShortage = 0;
+  let globalPowerShortage = 0;
   const nextFactions = state.factions.map((faction) => {
     const ledger = ledgers.get(faction.id) ?? createLedger();
     const availableData = faction.resources.data + ledger.dataOutput;
     const dataShortage = Math.max(0, ledger.dataDemand - availableData);
-    const shortageRatio = ledger.dataDemand === 0
-      ? 0
-      : dataShortage / ledger.dataDemand;
-
-    if (shortageRatio > 0) {
-      totalShortageRatio += shortageRatio;
-      shortageCount += 1;
-    }
-
-    const resources = {
-      compute: faction.resources.compute + ledger.computeOutput,
-      data: Math.max(0, availableData - ledger.dataDemand),
-      stability: clamp(
-        faction.resources.stability - shortageRatio * STABILITY_LOSS_PER_SHORTAGE_RATIO,
-        0,
-        100
-      )
-    };
+    const dataShortageRatio = ledger.dataDemand === 0 ? 0 : dataShortage / ledger.dataDemand;
+    const powerShortageRatio = ledger.regionCount === 0 ? 0 : ledger.powerShortageTotal / ledger.regionCount;
+    globalDataShortage += dataShortageRatio;
+    globalPowerShortage += powerShortageRatio;
 
     return {
-      ...cloneFaction(faction, ledger),
-      resources
-    };
+      ...faction,
+      resources: {
+        compute: faction.resources.compute + ledger.computeOutput,
+        data: Math.max(0, availableData - ledger.dataDemand),
+        stability: clamp(
+          faction.resources.stability
+            - dataShortageRatio * STABILITY_LOSS_PER_DATA_SHORTAGE
+            - powerShortageRatio * STABILITY_LOSS_PER_POWER_SHORTAGE,
+          0,
+          100
+        )
+      },
+      exclusive: { ...faction.exclusive }
+    } as Faction;
   });
 
-  const averageShortageRatio = shortageCount === 0
-    ? 0
-    : totalShortageRatio / shortageCount;
+  const factionCount = Math.max(1, state.factions.length);
+  const averageDataShortage = globalDataShortage / factionCount;
+  const averagePowerShortage = globalPowerShortage / factionCount;
 
   return {
     turn: state.turn + 1,
     factions: nextFactions,
-    tiles: state.tiles.map((tile) => ({ ...tile })),
+    infrastructureRegions: state.infrastructureRegions.map((region) => ({ ...region })),
     globalModelDrift: Math.max(
       0,
-      state.globalModelDrift + averageShortageRatio * GLOBAL_DRIFT_PER_SHORTAGE_RATIO
+      state.globalModelDrift
+        + averageDataShortage * DRIFT_PER_DATA_SHORTAGE
+        + averagePowerShortage * DRIFT_PER_POWER_SHORTAGE
     ),
     globalStability: clamp(
-      state.globalStability - averageShortageRatio * STABILITY_LOSS_PER_SHORTAGE_RATIO,
+      state.globalStability
+        - averageDataShortage * STABILITY_LOSS_PER_DATA_SHORTAGE
+        - averagePowerShortage * STABILITY_LOSS_PER_POWER_SHORTAGE,
       0,
       100
     )

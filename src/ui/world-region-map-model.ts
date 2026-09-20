@@ -1,23 +1,21 @@
-import type { TileId } from "@/core/models/ids";
+import { infrastructureRegionIds, type InfrastructureRegionId } from "@/core/models/ids";
 
-export const territoryRegions: Readonly<Record<TileId, readonly number[]>> = {
-  "glass-tower": [5, 17, 18, 21, 22],
-  "annotation-city": [23, 24, 25, 26, 29, 30],
-  "government-city": [1, 2, 6, 11, 12],
-  "old-town": [13, 14, 15, 16, 19, 20],
-  "energy-belt": [3, 4, 7, 8],
-  "wasteland": [9, 10, 27, 28]
-};
+export const mapRegionNumbers = Array.from({ length: 30 }, (_, index) => index + 1);
 
-const tileByRegion = new Map<number, TileId>(
-  Object.entries(territoryRegions).flatMap(([tileId, regionIds]) =>
-    regionIds.map((regionId) => [regionId, tileId as TileId] as const)
-  )
-);
+export const infrastructureRoutes: readonly (readonly [number, number])[] = [
+  [3, 4], [4, 7], [7, 8], [8, 12],
+  [1, 2], [1, 11], [9, 11], [11, 15], [15, 17], [17, 21], [21, 27], [27, 28],
+  [5, 10], [5, 16], [10, 18], [18, 22], [22, 26], [26, 30],
+  [13, 20], [20, 23], [23, 24], [24, 29],
+  [6, 14], [14, 19], [19, 25],
+  [2, 30], [6, 28], [13, 15], [19, 20], [22, 27]
+];
 
-export function getTileIdForRegion(regionId: number): TileId | undefined {
-  if (!Number.isInteger(regionId)) return undefined;
-  return tileByRegion.get(regionId);
+export function getInfrastructureRegionId(regionNumber: number): InfrastructureRegionId | undefined {
+  if (!Number.isInteger(regionNumber) || regionNumber < 1 || regionNumber > infrastructureRegionIds.length) {
+    return undefined;
+  }
+  return infrastructureRegionIds[regionNumber - 1];
 }
 
 export function decodeRegionId(red: number, green: number, blue: number): number {

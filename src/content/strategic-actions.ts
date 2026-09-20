@@ -6,7 +6,7 @@ export interface StrategicActionDefinition {
   description: string;
   tradeoff: string;
   cost: number;
-  target: "tile" | "faction";
+  target: "region" | "faction";
 }
 
 export const strategicActionDefinitions: readonly StrategicActionDefinition[] = [
@@ -16,23 +16,23 @@ export const strategicActionDefinitions: readonly StrategicActionDefinition[] = 
     description: "确认一个地区的异常来源，并为后续危机判断留下可靠记录。",
     tradeoff: "不改变当前产出，但占用一次行动机会。",
     cost: 1,
-    target: "tile"
+    target: "region"
   },
   {
     type: "audit",
     name: "审计",
     description: "检查训练数据与模型输出，压低目标地区的漂移。",
-    tradeoff: "消耗 6 数据，短期算力产出 -1。",
+    tradeoff: "消耗 6 数据，短期压低算力容量，同时降低用电负荷。",
     cost: 2,
-    target: "tile"
+    target: "region"
   },
   {
     type: "invest",
     name: "投资",
-    description: "为目标地区扩建长期生产能力。",
-    tradeoff: "消耗 8 算力，并提高数据需求与基础设施压力。",
+    description: "为目标区域扩建算力集群与配套供电。",
+    tradeoff: "消耗 8 算力。容量增长快于发电能力，会留下电力缺口。",
     cost: 2,
-    target: "tile"
+    target: "region"
   },
   {
     type: "negotiate",
@@ -48,7 +48,7 @@ export const strategicActionDefinitions: readonly StrategicActionDefinition[] = 
     description: "要求目标地区在本轮扩大生产。",
     tradeoff: "提高产出，同时增加劳动压力、漂移并降低稳定度。",
     cost: 1,
-    target: "tile"
+    target: "region"
   },
   {
     type: "publish",
@@ -56,7 +56,7 @@ export const strategicActionDefinitions: readonly StrategicActionDefinition[] = 
     description: "公开目标地区的问题与数据记录，纠正模型认知。",
     tradeoff: "消耗 3 数据，短期暴露矛盾并降低本势力稳定度。",
     cost: 1,
-    target: "tile"
+    target: "region"
   }
 ] as const;
 

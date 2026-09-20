@@ -1,5 +1,5 @@
 import type { GameState } from "../models/game-state";
-import type { FactionId, TileId } from "../models/ids";
+import { infrastructureRegionIds, type FactionId, type InfrastructureRegionId } from "../models/ids";
 
 export const ACTION_POINTS_PER_QUARTER = 3;
 
@@ -12,7 +12,7 @@ export type StrategicActionType =
   | "publish";
 
 export type StrategicAction =
-  | { type: "investigate" | "audit" | "invest" | "mobilize" | "publish"; tileId: TileId }
+  | { type: "investigate" | "audit" | "invest" | "mobilize" | "publish"; regionId: InfrastructureRegionId }
   | { type: "negotiate"; factionId: FactionId };
 
 export type ActionPressureTag =
@@ -27,7 +27,7 @@ export interface StrategicActionRecord {
   id: string;
   turn: number;
   type: StrategicActionType;
-  targetId: TileId | FactionId;
+  targetId: InfrastructureRegionId | FactionId;
   pressureTags: readonly ActionPressureTag[];
 }
 
@@ -35,7 +35,7 @@ export interface StrategicActionState {
   turn: number;
   status: "complete" | "active";
   pointsRemaining: number;
-  investigatedTileIds: readonly TileId[];
+  investigatedRegionIds: readonly InfrastructureRegionId[];
   history: readonly StrategicActionRecord[];
 }
 
@@ -63,9 +63,6 @@ const pressureTags: Readonly<Record<StrategicActionType, readonly ActionPressure
   publish: ["exposure-risk"]
 };
 
-const tileIds: readonly TileId[] = [
-  "glass-tower", "annotation-city", "government-city", "old-town", "energy-belt", "wasteland"
-];
 const factionIds: readonly FactionId[] = [
   "consortium", "sovereign", "labor_union", "independent_labs", "socialist_power"
 ];
@@ -86,7 +83,7 @@ export const createStrategicActionState = (): StrategicActionState => ({
   turn: 0,
   status: "complete",
   pointsRemaining: 0,
-  investigatedTileIds: [],
+  investigatedRegionIds: [],
   history: []
 });
 
@@ -101,8 +98,8 @@ export const beginStrategicActionPhase = (
 export const finishStrategicActionPhase = (state: StrategicActionState): StrategicActionState =>
   state.status === "complete" ? state : { ...state, status: "complete", pointsRemaining: 0 };
 
-const targetId = (action: StrategicAction): TileId | FactionId =>
-  action.type === "negotiate" ? action.factionId : action.tileId;
+const targetId = (action: StrategicAction): InfrastructureRegionId | FactionId =>
+  action.type === "negotiate" ? action.factionId : action.regionId;
 
 const addRecord = (
   state: StrategicActionState,
@@ -111,9 +108,9 @@ const addRecord = (
 ): StrategicActionState => ({
   ...state,
   pointsRemaining,
-  investigatedTileIds: action.type === "investigate" && !state.investigatedTileIds.includes(action.tileId)
-    ? [...state.investigatedTileIds, action.tileId]
-    : state.investigatedTileIds,
+  investigatedRegionIds: action.type === "investigate" && !state.investigatedRegionIds.includes(action.regionId)
+    ? [...state.investigatedRegionIds, action.regionId]
+    : state.investigatedRegionIds,
   history: [...state.history, {
     id: `${state.turn}-${state.history.length + 1}-${action.type}`,
     turn: state.turn,
@@ -145,13 +142,13 @@ export const executeStrategicAction = (
   if (actionState.pointsRemaining < cost) return { gameState, actionState, error: "insufficient-points" };
 
   const player = gameState.factions.find((faction) => faction.id === playerFactionId);
-  const tile = action.type === "negotiate"
+  const region = action.type === "negotiate"
     ? undefined
-    : gameState.tiles.find((candidate) => candidate.id === action.tileId);
+    : gameState.infrastructureRegions.find((candidate) => candidate.id === action.regionId);
   const targetFaction = action.type === "negotiate"
     ? gameState.factions.find((faction) => faction.id === action.factionId)
     : undefined;
-  if (player === undefined || (action.type === "negotiate" ? targetFaction === undefined : tile === undefined)) {
+  if (player === undefined || (action.type === "negotiate" ? targetFaction === undefined : region === undefined)) {
     return { gameState, actionState, error: "invalid-target" };
   }
 
@@ -162,10 +159,11 @@ export const executeStrategicAction = (
     nextGameState = {
       ...nextGameState,
       globalModelDrift: Math.max(0, nextGameState.globalModelDrift - 0.5),
-      tiles: nextGameState.tiles.map((candidate) => candidate.id === action.tileId
+      infrastructureRegions: nextGameState.infrastructureRegions.map((candidate) => candidate.id === action.regionId
         ? {
             ...candidate,
-            computeOutput: Math.max(0, candidate.computeOutput - 1),
+            computeCapacity: Math.max(0, candidate.computeCapacity - 0.5),
+            powerDemand: Math.max(0, candidate.powerDemand - 0.5),
             modelDrift: Math.max(0, candidate.modelDrift - 2),
             stability: clamp(candidate.stability + 3, 0, 100)
           }
@@ -176,11 +174,13 @@ export const executeStrategicAction = (
     nextGameState = updateFaction(gameState, playerFactionId, (resources) => ({ ...resources, compute: resources.compute - 8 }));
     nextGameState = {
       ...nextGameState,
-      tiles: nextGameState.tiles.map((candidate) => candidate.id === action.tileId
+      infrastructureRegions: nextGameState.infrastructureRegions.map((candidate) => candidate.id === action.regionId
         ? {
             ...candidate,
-            computeOutput: candidate.computeOutput + 2,
-            dataOutput: candidate.dataOutput + 1,
+            computeCapacity: candidate.computeCapacity + 2,
+            powerGeneration: candidate.powerGeneration + 0.4,
+            powerDemand: candidate.powerDemand + 1.4,
+            dataProduction: candidate.dataProduction + 0.5,
             modelDrift: candidate.modelDrift + 0.75
           }
         : candidate)
@@ -216,11 +216,12 @@ export const executeStrategicAction = (
     }));
     nextGameState = {
       ...nextGameState,
-      tiles: nextGameState.tiles.map((candidate) => candidate.id === action.tileId
+      infrastructureRegions: nextGameState.infrastructureRegions.map((candidate) => candidate.id === action.regionId
         ? {
             ...candidate,
-            computeOutput: candidate.computeOutput + 1,
-            dataOutput: candidate.dataOutput + 2,
+            computeCapacity: candidate.computeCapacity + 1,
+            dataProduction: candidate.dataProduction + 2,
+            powerDemand: candidate.powerDemand + 1,
             modelDrift: candidate.modelDrift + 1,
             stability: clamp(candidate.stability - 2, 0, 100)
           }
@@ -258,8 +259,8 @@ export const isStrategicActionState = (value: unknown): value is StrategicAction
     && (candidate.turn as number) >= 0
     && validStatus
     && validPoints
-    && Array.isArray(candidate.investigatedTileIds)
-    && candidate.investigatedTileIds.every((id) => tileIds.includes(id as TileId))
+    && Array.isArray(candidate.investigatedRegionIds)
+    && candidate.investigatedRegionIds.every((id) => infrastructureRegionIds.includes(id as InfrastructureRegionId))
     && Array.isArray(candidate.history)
     && candidate.history.every((record) => {
       if (typeof record !== "object" || record === null) return false;
@@ -267,7 +268,7 @@ export const isStrategicActionState = (value: unknown): value is StrategicAction
       return typeof actionRecord.id === "string"
         && Number.isInteger(actionRecord.turn)
         && actionTypes.includes(actionRecord.type as StrategicActionType)
-        && (tileIds.includes(actionRecord.targetId as TileId)
+        && (infrastructureRegionIds.includes(actionRecord.targetId as InfrastructureRegionId)
           || factionIds.includes(actionRecord.targetId as FactionId))
         && Array.isArray(actionRecord.pressureTags)
         && actionRecord.pressureTags.every((tag) => knownPressureTags.includes(tag as ActionPressureTag));

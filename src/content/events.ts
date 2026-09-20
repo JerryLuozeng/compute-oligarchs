@@ -1,4 +1,4 @@
-import type { FactionId, TileId } from "@/core/models";
+import type { FactionId, InfrastructureRegionId } from "@/core/models";
 
 export type EventTheme =
   | "labor_struggle"
@@ -26,8 +26,8 @@ export type EventCondition =
       value: number;
     }
   | {
-      kind: "tile_metric";
-      tile: TileId;
+      kind: "region_metric";
+      region: InfrastructureRegionId;
       metric: "stability" | "modelDrift";
       operator: "above" | "below";
       value: number;
@@ -76,7 +76,7 @@ export const gameEvents: readonly GameEvent[] = [
     policyText:
       "承认数据并非自然生成的矿藏。每一次分类、纠错与拒绝，都是活劳动进入模型的痕迹。没有劳动者的组织化 consent，数据不得转化为私人算力资本。",
     trigger: {
-      description: "数据劳工联合体的数据充足，但组织度尚未完成集中。",
+      description: "星火工联的数据充足，但组织度尚未完成集中。",
       all: [
         { kind: "turn_at_least", value: 2 },
         {
@@ -139,8 +139,8 @@ export const gameEvents: readonly GameEvent[] = [
           value: 0.45
         },
         {
-          kind: "tile_metric",
-          tile: "old-town",
+          kind: "region_metric",
+          region: "region-20",
           metric: "stability",
           operator: "below",
           value: 55
@@ -281,7 +281,7 @@ export const gameEvents: readonly GameEvent[] = [
     policyText:
       "个人数据不是行政机关或平台的无主财产。立即停止影子建模，由劳动者与社区共同审计数据用途、保存期限和再分配方式。",
     trigger: {
-      description: "主权国家监控指数高企，政务城存在漂移压力。",
+      description: "寰盟监控指数高企，政务城存在漂移压力。",
       all: [
         {
           kind: "faction_attribute",
@@ -291,8 +291,8 @@ export const gameEvents: readonly GameEvent[] = [
           value: 20
         },
         {
-          kind: "tile_metric",
-          tile: "government-city",
+          kind: "region_metric",
+          region: "region-15",
           metric: "modelDrift",
           operator: "above",
           value: 4
@@ -336,8 +336,8 @@ export const gameEvents: readonly GameEvent[] = [
       description: "废土漂移严重，全球新鲜数据储备出现紧张。",
       all: [
         {
-          kind: "tile_metric",
-          tile: "wasteland",
+          kind: "region_metric",
+          region: "region-28",
           metric: "modelDrift",
           operator: "above",
           value: 15

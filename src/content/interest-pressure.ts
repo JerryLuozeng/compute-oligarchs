@@ -191,18 +191,18 @@ const applyPressureConsequences = (
     next = { ...next, globalStability: clamp(next.globalStability - livelihood * 0.5) };
   }
 
-  const tileSeverity: Partial<Record<FactionId | "commons", number>> = {
+  const regionSeverity: Partial<Record<FactionId, number>> = {
     consortium: industry,
     sovereign: order,
     labor_union: workshop,
-    commons,
+    independent_labs: commons,
     socialist_power: livelihood
   };
   return {
     ...next,
-    tiles: next.tiles.map((tile) => {
-      const loss = tile.controllingFaction === "none" ? 0 : tileSeverity[tile.controllingFaction] ?? 0;
-      return loss === 0 ? tile : { ...tile, stability: clamp(tile.stability - loss) };
+    infrastructureRegions: next.infrastructureRegions.map((region) => {
+      const loss = regionSeverity[region.controllingFaction] ?? 0;
+      return loss === 0 ? region : { ...region, stability: clamp(region.stability - loss) };
     })
   };
 };

@@ -11,9 +11,9 @@ const expectedIds: readonly FactionId[] = [
 ];
 
 const expectedNames = [
-  "天穹财阀",
-  "联邦管委会",
-  "星火劳工团",
+  "天穹公司",
+  "寰盟",
+  "星火工联",
   "棱镜开源社",
   "赤衡共同体"
 ] as const;
@@ -32,6 +32,6 @@ describe("factionProfiles", () => {
   });
 
   it("resolves profiles by their core faction id", () => {
-    expect(getFactionProfile("labor_union").name).toBe("星火劳工团");
+    expect(getFactionProfile("labor_union").name).toBe("星火工联");
   });
 });

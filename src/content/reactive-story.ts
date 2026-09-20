@@ -43,7 +43,7 @@ const resonanceRules: readonly ReactiveStoryRule[] = [
       { id: "B", text: "只接一半，保留余地", outcome: "订单少了，但你还能说\"不\"。" }
     ]), "industry", "brightest"),
   lampRule(reactiveEvent("RA2", "resonance", "整齐的文件",
-    "管委会提前一年完成了新规草案，每一页都整整齐齐。可是，没人按它做事。",
+    "寰盟提前一年完成了新规草案，每一页都整整齐齐。可是，成员国没人按它做事。",
     "秩序之灯持续最亮。规则获得了资源，但落地仍需要一次选择。", [
       { id: "A", text: "推动落地试点，哪怕只在一座城", outcome: "规则第一次走出会议室，磕磕绊绊，也真的改变了些什么。" },
       { id: "B", text: "先放着，等更合适的时候", outcome: "文件被锁进抽屉。奥斯曼说：\"账不会过期，人会。\"" }
@@ -76,7 +76,7 @@ const grievanceRules: readonly ReactiveStoryRule[] = [
       { id: "B", text: "顶住压力，不为所动", outcome: "信被放进抽屉。第二天，几笔合作悄悄取消了。" }
     ]), "industry", "neglected"),
   lampRule(reactiveEvent("RB2", "grievance", "被推迟的听证",
-    "管委会经费告急，听证会被迫推迟。曼努埃拉站在门口，笑得有些勉强：\"我们会想办法的。\"",
+    "寰盟经费告急，听证会被迫推迟。曼努埃拉站在门口，笑得有些勉强：\"我们会想办法的。\"",
     "秩序之灯持续被冷落。没有资源的规则正在失去发声的场所。", [
       { id: "A", text: "补一点资源，把会办完", outcome: "听证会如期举行，座位坐满了一半。" },
       { id: "B", text: "不补，让他们自己想办法", outcome: "会议室的灯灭了。有人低声说：\"规则，也是要吃饭的。\"" }

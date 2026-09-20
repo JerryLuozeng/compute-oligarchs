@@ -1,10 +1,10 @@
 import type { Faction } from "./faction";
-import type { Tile } from "./tile";
+import type { InfrastructureRegion } from "./infrastructure-region";
 
 export interface GameState {
   turn: number;
   factions: Faction[];
-  tiles: Tile[];
+  infrastructureRegions: InfrastructureRegion[];
   globalModelDrift: number;
   globalStability: number;
 }

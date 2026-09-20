@@ -5,9 +5,9 @@ export const factionBriefings: ReadonlyArray<{
   name: string;
   position: string;
 }> = [
-  { id: "consortium", name: "财团", position: "占有算力，经营神话，也积累神话债。" },
-  { id: "sovereign", name: "主权国家", position: "需要算力治理，同时抵抗被算力占有者俘获。" },
-  { id: "labor_union", name: "数据劳工联合体", position: "生产新鲜数据，却缺少实现其价值的算力。" },
+  { id: "consortium", name: "天穹公司", position: "占有算力，经营神话，也积累神话债。" },
+  { id: "sovereign", name: "寰盟", position: "多国联合起来，争取不被超国家算力资本俘获。" },
+  { id: "labor_union", name: "星火工联", position: "跨国生产新鲜数据，却缺少实现其价值的算力。" },
   { id: "independent_labs", name: "独立实验室", position: "拥有知识，依赖租赁算力，在独立与依附间摇摆。" },
   { id: "socialist_power", name: "社会主义强国", position: "探索算力与数据公有，同时面对官僚化与封锁。" }
 ];
