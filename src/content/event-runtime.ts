@@ -1,5 +1,6 @@
 import type { Faction } from "@/core/models/faction";
 import type { GameState } from "@/core/models/game-state";
+import type { FactionId } from "@/core/models/ids";
 import {
   gameEvents,
   type EventCondition,
@@ -215,7 +216,10 @@ export const runtimeGameEvents: readonly RuntimeGameEvent[] = gameEvents.map(cre
 
 export const findTriggeredEvent = (
   state: GameState,
-  resolvedEventIds: ReadonlySet<string>
+  resolvedEventIds: ReadonlySet<string>,
+  playerFactionId: FactionId
 ): RuntimeGameEvent | undefined => runtimeGameEvents.find(
-  (event) => !resolvedEventIds.has(event.id) && event.trigger.matches(state)
+  (event) => event.faction === playerFactionId
+    && !resolvedEventIds.has(event.id)
+    && event.trigger.matches(state)
 );

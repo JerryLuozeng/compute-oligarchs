@@ -10,16 +10,16 @@ import {
 
 describe("event runtime", () => {
   it("matches every configured condition before returning one event", () => {
-    const event = findTriggeredEvent(initialGameState, new Set());
+    const event = findTriggeredEvent(initialGameState, new Set(), "consortium");
 
     expect(event?.id).toBe("blackout-auction");
     expect(event?.trigger.matches(initialGameState)).toBe(true);
   });
 
   it("skips resolved events and still returns at most one match", () => {
-    const event = findTriggeredEvent(initialGameState, new Set(["blackout-auction"]));
+    const event = findTriggeredEvent(initialGameState, new Set(["blackout-auction"]), "consortium");
 
-    expect(event?.id).toBe("rentier-protocol");
+    expect(event).toBeUndefined();
   });
 
   it("applies option effects without mutating the current state", () => {
@@ -42,6 +42,11 @@ describe("event runtime", () => {
       expect(event.options).toHaveLength(2);
       expect(event.options.every((option) => typeof option.effect === "function")).toBe(true);
     }
+  });
+
+  it("does not expose another faction's crisis as the player's decision", () => {
+    expect(findTriggeredEvent(initialGameState, new Set(), "independent_labs")?.id).toBe("rentier-protocol");
+    expect(findTriggeredEvent(initialGameState, new Set(), "labor_union")).toBeUndefined();
   });
 
   it("records the selected runtime event option once", () => {

@@ -55,6 +55,8 @@ export interface GameEventOption {
 
 export interface GameEvent {
   id: string;
+  /** The faction whose position frames the decision shown to the player. */
+  faction: FactionId;
   theme: EventTheme;
   title: string;
   description: string;
@@ -69,6 +71,7 @@ export interface GameEvent {
 export const gameEvents: readonly GameEvent[] = [
   {
     id: "annotation-city-silent-shift",
+    faction: "labor_union",
     theme: "labor_struggle",
     title: "标注城的静默班次",
     description:
@@ -122,6 +125,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "ghost-workers-ledger",
+    faction: "labor_union",
     theme: "labor_struggle",
     title: "幽灵工时总账",
     description:
@@ -174,6 +178,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "blackout-auction",
+    faction: "consortium",
     theme: "compute_monopoly",
     title: "停电拍卖",
     description:
@@ -221,6 +226,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "rentier-protocol",
+    faction: "independent_labs",
     theme: "compute_monopoly",
     title: "租算协议第零条",
     description:
@@ -274,6 +280,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "citizen-shadow-corpus",
+    faction: "sovereign",
     theme: "data_leak",
     title: "公民影子语料库",
     description:
@@ -326,6 +333,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "wasteland-memory-market",
+    faction: "socialist_power",
     theme: "data_leak",
     title: "废土记忆市场",
     description:
@@ -378,6 +386,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "agi-prophecy-error",
+    faction: "consortium",
     theme: "model_drift",
     title: "AGI 预言误差",
     description:
@@ -423,6 +432,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "recursive-famine",
+    faction: "independent_labs",
     theme: "model_drift",
     title: "递归饥荒",
     description:
@@ -469,6 +479,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "weights-over-the-wall",
+    faction: "independent_labs",
     theme: "open_source_commons",
     title: "权重越过高墙",
     description:
@@ -523,6 +534,7 @@ export const gameEvents: readonly GameEvent[] = [
   },
   {
     id: "common-compute-charter",
+    faction: "socialist_power",
     theme: "open_source_commons",
     title: "共同算力宪章",
     description:
