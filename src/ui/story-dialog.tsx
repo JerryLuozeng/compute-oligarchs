@@ -128,7 +128,6 @@ export function StoryDialog({
           }
         }}
       >
-        <div className="event-dialog__noise" aria-hidden="true" />
         <header className="event-dialog__header">
           <span><RadioTower /> STORY SIGNAL / {event.displayCode ?? event.id}</span>
           <span className="event-dialog__theme"><i />{event.chapter}</span>

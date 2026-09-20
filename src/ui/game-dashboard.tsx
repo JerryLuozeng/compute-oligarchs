@@ -103,6 +103,13 @@ const factionTone: Record<Faction["id"], string> = {
 
 const resourceBar = (value: number): number => Math.min(100, Math.max(0, value));
 
+const getDriftLevel = (drift: number): "normal" | "watch" | "warning" | "critical" => {
+  if (drift >= 80) return "critical";
+  if (drift >= 60) return "warning";
+  if (drift >= 40) return "watch";
+  return "normal";
+};
+
 function ResourceLine({
   icon,
   label,
@@ -449,7 +456,7 @@ export function GameDashboard({
   };
 
   return (
-    <main className={`dashboard-shell ${glitchEnabled ? "glitch-enabled" : ""}`}>
+    <main className={`dashboard-shell drift-${getDriftLevel(gameState.globalModelDrift)} ${glitchEnabled ? "glitch-enabled" : ""}`}>
       <div className="dashboard-noise" aria-hidden="true" />
       <div className="dashboard-scanline" aria-hidden="true" />
 
@@ -485,7 +492,7 @@ export function GameDashboard({
             aria-pressed={glitchEnabled}
             onClick={() => setGlitchEnabled((enabled) => !enabled)}
           >
-            GLITCH {glitchEnabled ? "ON" : "OFF"}
+            SIGNAL FX {glitchEnabled ? "ON" : "OFF"}
           </button>
         </div>
       </header>
